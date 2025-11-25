@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel MET Bolivia</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- clave para móviles -->
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #f4f6f9; 
+      padding: 10px; 
+      margin: 0;
+    }
+    h2 { 
+      text-align: center; 
+      color: #333; 
+      font-size: 1.4em; 
+      margin: 15px 0;
+    }
+    .panel { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+      gap: 15px; 
+      margin-top: 10px; 
+    }
+    .card { 
+      border-radius: 8px; 
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
+      padding: 12px; 
+      color: #fff; 
+      transition: background 1s ease; 
+    }
+    .card h3 { 
+      margin: 0 0 8px; 
+      font-size: 1.1em; 
+      display: flex; 
+      align-items: center; 
+    }
+    pre { 
+      background: rgba(255,255,255,0.2); 
+      padding: 8px; 
+      border-radius: 5px; 
+      white-space: pre-wrap; 
+      color: #fff; 
+      font-size: 0.9em; 
+      overflow-x: auto;
+    }
+    .alert { color: yellow; font-weight: bold; }
+    .hora, .contador { 
+      font-size: 0.8em; 
+      color: #eee; 
+      margin-top: 6px; 
+    }
+    .icono { font-size: 1.3em; margin-right: 6px; }
+
+    /* Fondos según fenómeno */
+    .tormenta { background: linear-gradient(135deg, #8b0000, #b22222); }
+    .lluvia { background: linear-gradient(135deg, #1e3c72, #2a5298); }
+    .niebla { background: linear-gradient(135deg, #555, #888); }
+    .normal { background: linear-gradient(135deg, #2e8b57, #3cb371); }
+
+    /* Footer responsivo */
+    footer { 
+      text-align: center; 
+      margin-top: 20px; 
+      font-size: 0.8em; 
+      color: #555; 
+      padding: 10px; 
+    }
+
+    /* Ajustes para pantallas pequeñas */
+    @media (max-width: 480px) {
+      h2 { font-size: 1.2em; }
+      .card h3 { font-size: 1em; }
+      pre { font-size: 0.8em; }
+    }
+  </style>
+</head>
+<body>
+  <h2>Información Meteorológica Aeronáutica – Bolivia</h2>
+  <div class="panel" id="panel"></div>
+
+  <footer>
+    © 2025 Yamil Quiroz — Todos los derechos reservados
+  </footer>
+
+  <script>
+    const aeropuertos = {
+      "SLLP": "El Alto - La Paz",
+      "SLCB": "Cochabamba",
+      "SLTR": "Trinidad",
+      "SLVR": "Santa Cruz - Viru Viru",
+      "SLGY": "Guayaramerín"
+    };
+
+    const intervalo = 600000; // 10 minutos en ms
+    let proximaActualizacion = Date.now() + intervalo;
+
+    function obtenerIcono(metar) {
+      if (metar.includes("TS")) return {icono: "🌩️", clase: "tormenta"};
+      if (metar.includes("RA")) return {icono: "🌧️", clase: "lluvia"};
+      if (metar.includes("FG")) return {icono: "🌫️", clase: "niebla"};
+      return {icono: "☁️", clase: "normal"};
+    }
+
+    async function cargarMETAR() {
+      const panel = document.getElementById("panel");
+      panel.innerHTML = "";
+
+      for (let icao in aeropuertos) {
+        try {
+          const resp = await fetch(`https://api.allorigins.win/raw?url=https://tgftp.nws.noaa.gov/data/observations/metar/stations/${icao}.TXT`);
+          const data = await resp.text();
+
+          const {icono, clase} = obtenerIcono(data);
+          const hora = new Date().toLocaleTimeString();
+
+          const card = document.createElement("div");
+          card.className = `card ${clase}`;
+          card.innerHTML = `
+            <h3><span class="icono">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
+            <pre>${data}</pre>
+            <div class="hora">Última actualización: ${hora}</div>
+            <div class="contador" id="contador-${icao}"></div>
+          `;
+          panel.appendChild(card);
+        } catch (e) {
+          const card = document.createElement("div");
+          card.className = "card tormenta";
+          card.innerHTML = `
+            <h3>${aeropuertos[icao]} (${icao})</h3>
+            <p class="alert">No se pudo obtener el METAR</p>
+          `;
+          panel.appendChild(card);
+        }
+      }
+      proximaActualizacion = Date.now() + intervalo;
+    }
+
+    function actualizarContadores() {
+      for (let icao in aeropuertos) {
+        const contador = document.getElementById(`contador-${icao}`);
+        if (contador) {
+          const restante = Math.max(0, proximaActualizacion - Date.now());
+          const minutos = Math.floor(restante / 60000);
+          const segundos = Math.floor((restante % 60000) / 1000);
+          contador.textContent = `Próxima actualización en ${minutos}:${segundos.toString().padStart(2, '0')}`;
+        }
+      }
+    }
+
+    // cargar al inicio
+    cargarMETAR();
+    // refrescar cada 10 minutos
+    setInterval(cargarMETAR, intervalo);
+    // actualizar contadores cada segundo
+    setInterval(actualizarContadores, 1000);
+  </script>
+</body>
+</html>
