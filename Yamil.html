@@ -134,20 +134,15 @@
         }
       }
     }
-
-    function copiarMETAR() {
-      let texto = "";
-      const fecha = new Date().toISOString().slice(0,16).replace("T"," ");
-      document.querySelectorAll(".card pre").forEach(pre => {
-        texto += fecha + "\n" + pre.textContent.trim()
-        texto += fecha + "\n" + pre.textContent.trim() + "\n\n";
-      });
-      navigator.clipboard.writeText(texto).then(() => {
-        alert("✅ METAR copiados al portapapeles");
-      }).catch(err => {
-        console.error("Error al copiar:", err);
-      });
-    }
+function copiarMETAR() {
+  let texto = "";
+  document.querySelectorAll(".card pre").forEach(pre => {
+    texto += pre.textContent.trim() + "\n\n";
+  });
+  navigator.clipboard.writeText(texto).then(() => {
+    alert("✅ METAR copiados al portapapeles");
+  });
+}
 
     // Inicializar carga y actualizaciones
     cargarMETAR();
@@ -156,6 +151,7 @@
   </script>
 </body>
 </html>
+
 
 
 
