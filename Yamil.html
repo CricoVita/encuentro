@@ -139,11 +139,7 @@
         let lineas = pre.textContent.trim().split("\n");
         if (lineas.length > 1) lineas.shift(); // elimina la fecha NOAA
         texto += lineas.join("\n") + "\n\n";
-      });
-      navigator.clipboard.writeText(texto).then(() => {
-        alert("✅ METAR copiados al portapapeles");
-      }).catch(err => {
-        console.error("Error al copiar:", err);
+    
       });
       navigator.clipboard.writeText(texto).then(() => {
         alert("✅ METAR copiados al portapapeles");
@@ -159,6 +155,7 @@
   </script>
 </body>
 </html>
+
 
 
 
