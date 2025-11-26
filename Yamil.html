@@ -1,11 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Panel MET Bolivia</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Ícono meteorológico en la barra del navegador -->
   <link rel="icon" type="image/png" href="favicon.png">
 
   <style>
@@ -19,13 +18,11 @@
     .extras { color: #ffebcd; }
     .icono { font-size: 1.5em; margin-right: 6px; display: inline-block; }
 
-    /* Fondos según fenómeno */
     .tormenta { background: linear-gradient(135deg, #8b0000, #b22222); }
     .lluvia { background: linear-gradient(135deg, #1e3c72, #2a5298); }
     .niebla { background: linear-gradient(135deg, #555, #888); }
     .normal { background: linear-gradient(135deg, #2e8b57, #3cb371); }
 
-    /* Animaciones */
     .bounce { animation: bounce 2s infinite; }
     @keyframes bounce { 40% { transform: translateY(-8px); } 60% { transform: translateY(-4px); } }
     .blink { animation: blink 1.5s infinite; }
@@ -60,7 +57,8 @@
       "SLTR": "Trinidad",
       "SLVR": "Santa Cruz - Viru Viru",
       "SLGY": "Guayaramerín",
-      "SLRQ": "Rurrenabaque"
+      "SLRQ": "Rurrenabaque",
+      "SLRI": "Riberalta" // 👈 corregido no SLRB que dijo SPEDDY JA
     };
 
     const intervalo = 600000; 
@@ -134,26 +132,25 @@
         }
       }
     }
-function copiarMETAR() {
-  let texto = "";
-  document.querySelectorAll(".card pre").forEach(pre => {
-    // Dividir en líneas
-    let lineas = pre.textContent.trim().split("\n");
-    // Quitar la primera línea (la fecha NOAA)
-    if (lineas.length > 1) {
-      lineas.shift();
+
+    function copiarMETAR() {
+      let texto = "";
+      document.querySelectorAll(".card pre").forEach(pre => {
+        let lineas = pre.textContent.trim().split("\n");
+        if (lineas.length > 1) lineas.shift(); // elimina la fecha NOAA
+        texto += lineas.join("\n") + "\n\n";
+      });
+      navigator.clipboard.writeText(texto).then(() => {
+        alert("✅ METAR copiados al portapapeles");
+      }).catch(err => {
+        console.error("Error al copiar:", err);
+      });
+      navigator.clipboard.writeText(texto).then(() => {
+        alert("✅ METAR copiados al portapapeles");
+      }).catch(err => {
+        console.error("Error al copiar:", err);
+      });
     }
-    texto += lineas.join("\n") + "\n\n";
-  });
-  navigator.clipboard.writeText(texto).then(() => {
-    alert("✅ METAR copiados al portapapeles");
-  }).catch(err => {
-    console.error("Error al copiar:", err);
-  });
-}
-
-
-
 
     // Inicializar carga y actualizaciones
     cargarMETAR();
@@ -162,6 +159,9 @@ function copiarMETAR() {
   </script>
 </body>
 </html>
+
+
+
 
 
 
