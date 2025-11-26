@@ -137,7 +137,13 @@
 function copiarMETAR() {
   let texto = "";
   document.querySelectorAll(".card pre").forEach(pre => {
-    texto += pre.textContent.trim() + "\n\n"; // 👈 solo el METAR crudo
+    // Dividir en líneas
+    let lineas = pre.textContent.trim().split("\n");
+    // Quitar la primera línea (la fecha NOAA)
+    if (lineas.length > 1) {
+      lineas.shift();
+    }
+    texto += lineas.join("\n") + "\n\n";
   });
   navigator.clipboard.writeText(texto).then(() => {
     alert("✅ METAR copiados al portapapeles");
@@ -148,6 +154,7 @@ function copiarMETAR() {
 
 
 
+
     // Inicializar carga y actualizaciones
     cargarMETAR();
     setInterval(cargarMETAR, intervalo);
@@ -155,6 +162,7 @@ function copiarMETAR() {
   </script>
 </body>
 </html>
+
 
 
 
