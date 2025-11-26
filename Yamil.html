@@ -137,12 +137,16 @@
 function copiarMETAR() {
   let texto = "";
   document.querySelectorAll(".card pre").forEach(pre => {
-    texto += pre.textContent.trim() + "\n\n";
+    texto += pre.textContent.trim() + "\n\n"; // 👈 solo el METAR crudo
   });
   navigator.clipboard.writeText(texto).then(() => {
     alert("✅ METAR copiados al portapapeles");
+  }).catch(err => {
+    console.error("Error al copiar:", err);
   });
 }
+
+
 
     // Inicializar carga y actualizaciones
     cargarMETAR();
@@ -151,6 +155,7 @@ function copiarMETAR() {
   </script>
 </body>
 </html>
+
 
 
 
