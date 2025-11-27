@@ -2,140 +2,35 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Panel MET Bolivia – NAABOL</title>
+  <title>Prueba METAR – NAABOL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- 👇 Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png">
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 10px; margin: 0; }
-    h2 { text-align: center; color: #333; font-size: 1.4em; margin: 15px 0; }
-    .panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 10px; }
-    .card { border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 12px; color: #fff; transition: background 1s ease; }
-    .card h3 { margin: 0 0 8px; font-size: 1.1em; display: flex; align-items: center; }
-    pre { background: rgba(255,255,255,0.2); padding: 8px; border-radius: 5px; white-space: pre-wrap; color: #fff; font-size: 0.9em; overflow-x: auto; }
-    .hora, .contador, .extras { font-size: 0.8em; margin-top: 6px; }
-    .extras { color: #ffebcd; }
-    .icono { font-size: 1.5em; margin-right: 6px; display: inline-block; }
-    .tormenta { background: linear-gradient(135deg, #8b0000, #b22222); }
-    .lluvia { background: linear-gradient(135deg, #1e3c72, #2a5298); }
-    .niebla { background: linear-gradient(135deg, #555, #888); }
-    .normal { background: linear-gradient(135deg, #2e8b57, #3cb371); }
-    footer { text-align: center; margin-top: 20px; font-size: 0.8em; color: #555; padding: 10px; }
-    .boton-copiar { display:block; margin:10px auto; padding:8px 15px; background:#2e8b57; color:#fff; border:none; border-radius:5px; cursor:pointer; }
-    .boton-copiar:hover { background:#3cb371; }
+    body { font-family: monospace; background: #f4f6f9; padding: 20px; }
+    pre { background: #fff; border: 1px solid #ccc; padding: 10px; white-space: pre-wrap; }
   </style>
 </head>
 <body>
-  <h2>Información Meteorológica Aeronáutica – Bolivia (NAABOL)</h2>
-  <button class="boton-copiar">📋 Copiar METAR</button>
-  <div class="panel" id="panel"></div>
-  <footer>© 2026 Yamil quiroz — Panel con datos oficiales de NAABOL</footer>
+  <h2>Texto crudo recibido desde NAABOL</h2>
+  <pre id="output">Cargando...</pre>
 
   <script>
-    const aeropuertos = {
-      "SLLP": "El Alto - La Paz",
-      "SLCB": "Cochabamba",
-      "SLTR": "Trinidad",
-      "SLVR": "Santa Cruz - Viru Viru",
-      "SLGM": "Guayaramerín",
-      "SLRQ": "Rurrenabaque",
-      "SLRI": "Riberalta"
-    };
-
-    const intervalo = 600000; 
-    let proximaActualizacion = Date.now() + intervalo;
-
-    function obtenerIcono(metar) {
-      if (metar.includes("TS")) return {icono: "🌩️", clase: "tormenta"};
-      if (metar.includes("RA")) return {icono: "🌧️", clase: "lluvia"};
-      if (metar.includes("FG")) return {icono: "🌫️", clase: "niebla"};
-      if (metar.includes("SN")) return {icono: "❄️", clase: "niebla"};
-      if (metar.includes("WS")) return {icono: "🌪️", clase: "tormenta"};
-      if (metar.includes("CAVOK")) return {icono: "☀️", clase: "normal"};
-      return {icono: "☁️", clase: "normal"};
-    }
-
-    function obtenerIconosExtras(metar) {
-      let extras = "";
-      if (metar.includes("TS")) extras += "🌩️ Tormenta ";
-      if (metar.includes("RA")) extras += "🌧️ Lluvia ";
-      if (metar.includes("FG")) extras += "🌫️ Niebla ";
-      if (metar.includes("SN")) extras += "❄️ Nieve ";
-      if (metar.includes("WS")) extras += "🌪️ Viento fuerte ";
-      if (metar.includes("CAVOK")) extras += "☀️ Cielo despejado ";
-      return extras || "☁️ Sin fenómenos significativos";
-    }
-
-    async function cargarMETAR() {
-      const panel = document.getElementById("panel");
-      panel.innerHTML = "";
-
+    async function cargarTexto() {
       try {
-        const resp = await fetch("https://api.allorigins.win/raw?url=http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1");
+        const resp = await fetch("https://api.allorigins.win/raw?url=http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=3");
         const texto = await resp.text();
-
-        for (let icao in aeropuertos) {
-          // Buscar METAR con o sin guion delante
-          const regex = new RegExp(`-?METAR ${icao}[\\s\\S]*?(?=-?METAR|$)`, "i");
-          const match = texto.match(regex);
-          let data = match ? match[0] : "No disponible";
-
-          data = data.replace(/[\x00-\x1F\x7F]/g, "").trim();
-          data = data.replace(/SABO.*$/i, "").trim();
-
-          const {icono, clase} = obtenerIcono(data);
-          const extras = obtenerIconosExtras(data);
-          const hora = new Date().toLocaleTimeString();
-
-          const card = document.createElement("div");
-          card.className = `card ${clase}`;
-          card.innerHTML = `
-            <h3><span class="icono">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
-            <pre>${data}</pre>
-            <div class="extras">Fenómenos detectados: ${extras}</div>
-            <div class="hora">Última actualización: ${hora}</div>
-            <div class="contador" id="contador-${icao}"></div>
-          `;
-          panel.appendChild(card);
-        }
+        document.getElementById("output").textContent = texto;
+        console.log("Texto recibido:", texto); // 👈 también lo ves en consola
       } catch (e) {
-        console.error("Error al obtener datos de NAABOL:", e);
-      }
-
-      proximaActualizacion = Date.now() + intervalo;
-    }
-
-    function actualizarContadores() {
-      for (let icao in aeropuertos) {
-        const contador = document.getElementById(`contador-${icao}`);
-        if (contador) {
-          const restante = Math.max(0, proximaActualizacion - Date.now());
-          const minutos = Math.floor(restante / 60000);
-          const segundos = Math.floor((restante % 60000) / 1000);
-          contador.textContent = `Próxima actualización en ${minutos}:${segundos.toString().padStart(2, '0')}`;
-        }
+        document.getElementById("output").textContent = "Error al obtener datos: " + e;
+        console.error("Error:", e);
       }
     }
 
-    function copiarMETAR() {
-      let texto = "";
-      document.querySelectorAll(".card pre").forEach(pre => {
-        texto += pre.textContent.trim() + "\n\n";
-      });
-      navigator.clipboard.writeText(texto).then(() => {
-        alert("✅ METAR copiados al portapapeles");
-      }).catch(err => {
-        console.error("Error al copiar:", err);
-      });
-    }
-
-    cargarMETAR();
-    setInterval(cargarMETAR, intervalo);
-    setInterval(actualizarContadores, 1000);
-    document.querySelector(".boton-copiar").addEventListener("click", copiarMETAR);
+    cargarTexto();
   </script>
 </body>
 </html>
+
 
 
 
