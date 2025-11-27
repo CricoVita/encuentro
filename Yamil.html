@@ -27,7 +27,7 @@
   <h2>Información Meteorológica Aeronáutica – Bolivia (NAABOL)</h2>
   <button class="boton-copiar">📋 Copiar METAR</button>
   <div class="panel" id="panel"></div>
-  <footer>© 2025 Yamil Quiroz — Panel con datos oficiales de NAABOL</footer>
+  <footer>© 2026 Yamil Quiroz — Panel con datos oficiales de NAABOL</footer>
 
   <script>
     const aeropuertos = {
@@ -35,7 +35,7 @@
       "SLCB": "Cochabamba",
       "SLTR": "Trinidad",
       "SLVR": "Santa Cruz - Viru Viru",
-      "SLGM": "Guayaramerín",
+      "SLGY": "Guayaramerín",
       "SLRQ": "Rurrenabaque",
       "SLRI": "Riberalta"
     };
@@ -69,7 +69,7 @@
       panel.innerHTML = "";
 
       try {
-        const resp = await fetch("metar.php"); // 👈 ahora apunta a tu proxy PHP
+        const resp = await fetch("metar.php"); // usa tu proxy PHP en el mismo dominio
         const html = await resp.text();
 
         const parser = new DOMParser();
@@ -77,10 +77,12 @@
         const texto = doc.body.textContent;
 
         for (let icao in aeropuertos) {
+          // Captura todo el bloque del METAR hasta el siguiente METAR o fin de texto
           const regex = new RegExp(`METAR ${icao}[\\s\\S]*?(?=METAR|$)`, "i");
           const match = texto.match(regex);
           let data = match ? match[0] : "No disponible";
 
+          // Limpieza: caracteres invisibles y encabezados SABO
           data = data.replace(/[\x00-\x1F\x7F]/g, "").trim();
           data = data.replace(/SABO.*$/i, "").trim();
 
@@ -137,6 +139,28 @@
   </script>
 </body>
 </html>
+
+
+    function copiarMETAR() {
+      let texto = "";
+      document.querySelectorAll(".card pre").forEach(pre => {
+        texto += pre.textContent.trim() + "\n\n";
+      });
+      navigator.clipboard.writeText(texto).then(() => {
+        alert("✅ METAR copiados al portapapeles");
+      }).catch(err => {
+        console.error("Error al copiar:", err);
+      });
+    }
+
+    cargarMETAR();
+    setInterval(cargarMETAR, intervalo);
+    setInterval(actualizarContadores, 1000);
+    document.querySelector(".boton-copiar").addEventListener("click", copiarMETAR);
+  </script>
+</body>
+</html>
+
 
 
 
