@@ -16,7 +16,7 @@ curl_setopt($ch, CURLOPT_TIMEOUT, 20);
 
 $response = curl_exec($ch);
 
-if(curl_errno($ch)) {
+if (curl_errno($ch)) {
     echo "Error al obtener datos: " . curl_error($ch);
 } else {
     echo $response;
@@ -24,4 +24,5 @@ if(curl_errno($ch)) {
 
 curl_close($ch);
 ?>
+
 
