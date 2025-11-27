@@ -2,10 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Panel MET Bolivia</title>
+  <title>Panel MET Bolivia – NAABOL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="icon" type="image/png" href="favicon.png">
 
   <style>
     body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 10px; margin: 0; }
@@ -42,12 +40,12 @@
   </style>
 </head>
 <body>
-  <h2>Información Meteorológica Aeronáutica – Bolivia</h2>
-  <button class="boton-copiar" onclick="copiarMETAR()">📋 Copiar METAR</button>
+  <h2>Información Meteorológica Aeronáutica – Bolivia (NAABOL)</h2>
+  <button class="boton-copiar">📋 Copiar METAR</button>
   <div class="panel" id="panel"></div>
 
   <footer>
-    © 2025 Yamil Quiroz — Todos los derechos reservados
+    © 2025 Yamil Quiroz — Panel con datos oficiales de NAABOL
   </footer>
 
   <script>
@@ -58,7 +56,7 @@
       "SLVR": "Santa Cruz - Viru Viru",
       "SLGM": "Guayaramerín",
       "SLRQ": "Rurrenabaque",
-      "SLRI": "Riberalta" // 👈 corregido no SLRB que dijo SPEDDY JA
+      "SLRI": "Riberalta"
     };
 
     const intervalo = 600000; 
@@ -89,10 +87,19 @@
       const panel = document.getElementById("panel");
       panel.innerHTML = "";
 
-      for (let icao in aeropuertos) {
-        try {
-          const resp = await fetch(`https://api.allorigins.win/raw?url=https://tgftp.nws.noaa.gov/data/observations/metar/stations/${icao}.TXT`);
-          const data = await resp.text();
+      try {
+        // Usamos AllOrigins para evitar CORS
+        const resp = await fetch("https://api.allorigins.win/raw?url=http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1");
+        const html = await resp.text();
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const texto = doc.body.textContent;
+
+        for (let icao in aeropuertos) {
+          const regex = new RegExp(`METAR ${icao}.*`, "g");
+          const match = texto.match(regex);
+          const data = match ? match[0] : "No disponible";
 
           const {icono, clase, anim} = obtenerIcono(data);
           const extras = obtenerIconosExtras(data);
@@ -108,16 +115,11 @@
             <div class="contador" id="contador-${icao}"></div>
           `;
           panel.appendChild(card);
-        } catch (e) {
-          const card = document.createElement("div");
-          card.className = "card tormenta";
-          card.innerHTML = `
-            <h3>${aeropuertos[icao]} (${icao})</h3>
-            <p class="alert">⚠️ No se pudo obtener el METAR</p>
-          `;
-          panel.appendChild(card);
         }
+      } catch (e) {
+        console.error("Error al obtener datos de NAABOL:", e);
       }
+
       proximaActualizacion = Date.now() + intervalo;
     }
 
@@ -136,10 +138,7 @@
     function copiarMETAR() {
       let texto = "";
       document.querySelectorAll(".card pre").forEach(pre => {
-        let lineas = pre.textContent.trim().split("\n");
-        if (lineas.length > 1) lineas.shift(); // elimina la fecha NOAA
-        texto += lineas.join("\n") + "\n\n";
-    
+        texto += pre.textContent.trim() + "\n\n";
       });
       navigator.clipboard.writeText(texto).then(() => {
         alert("✅ METAR copiados al portapapeles");
@@ -148,13 +147,18 @@
       });
     }
 
-    // Inicializar carga y actualizaciones
+        // Inicializar carga y actualizaciones
     cargarMETAR();
     setInterval(cargarMETAR, intervalo);
     setInterval(actualizarContadores, 1000);
+
+    // Configurar el botón con addEventListener
+    document.querySelector(".boton-copiar").addEventListener("click", copiarMETAR);
   </script>
 </body>
 </html>
+
+
 
 
 
