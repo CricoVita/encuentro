@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Panel MET Bolivia – NAABOL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <style>
     body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 10px; margin: 0; }
     h2 { text-align: center; color: #333; font-size: 1.4em; margin: 15px 0; }
@@ -15,25 +14,10 @@
     .hora, .contador, .extras { font-size: 0.8em; margin-top: 6px; }
     .extras { color: #ffebcd; }
     .icono { font-size: 1.5em; margin-right: 6px; display: inline-block; }
-
     .tormenta { background: linear-gradient(135deg, #8b0000, #b22222); }
     .lluvia { background: linear-gradient(135deg, #1e3c72, #2a5298); }
     .niebla { background: linear-gradient(135deg, #555, #888); }
     .normal { background: linear-gradient(135deg, #2e8b57, #3cb371); }
-
-    .bounce { animation: bounce 2s infinite; }
-    @keyframes bounce { 40% { transform: translateY(-8px); } 60% { transform: translateY(-4px); } }
-    .blink { animation: blink 1.5s infinite; }
-    @keyframes blink { 25%,75% { opacity: 0.3; } }
-    .spin { animation: spin 4s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .fall { animation: fall 3s infinite linear; }
-    @keyframes fall { 100% { transform: translateY(10px); opacity: 0.7; } }
-    .fade { animation: fade 4s infinite; }
-    @keyframes fade { 50% { opacity: 0.4; } }
-    .float { animation: float 5s ease-in-out infinite; }
-    @keyframes float { 50% { transform: translateY(-6px); } }
-
     footer { text-align: center; margin-top: 20px; font-size: 0.8em; color: #555; padding: 10px; }
     .boton-copiar { display:block; margin:10px auto; padding:8px 15px; background:#2e8b57; color:#fff; border:none; border-radius:5px; cursor:pointer; }
     .boton-copiar:hover { background:#3cb371; }
@@ -43,10 +27,7 @@
   <h2>Información Meteorológica Aeronáutica – Bolivia (NAABOL)</h2>
   <button class="boton-copiar">📋 Copiar METAR</button>
   <div class="panel" id="panel"></div>
-
-  <footer>
-    © 2026 Yamil Quiroz — Panel con datos oficiales de NAABOL
-  </footer>
+  <footer>© 2025 Yamil Quiroz — Panel con datos oficiales de NAABOL</footer>
 
   <script>
     const aeropuertos = {
@@ -63,13 +44,13 @@
     let proximaActualizacion = Date.now() + intervalo;
 
     function obtenerIcono(metar) {
-      if (metar.includes("TS")) return {icono: "🌩️", clase: "tormenta", anim: "bounce blink"};
-      if (metar.includes("RA")) return {icono: "🌧️", clase: "lluvia", anim: "fall"};
-      if (metar.includes("FG")) return {icono: "🌫️", clase: "niebla", anim: "fade"};
-      if (metar.includes("SN")) return {icono: "❄️", clase: "niebla", anim: "fall"};
-      if (metar.includes("WS")) return {icono: "🌪️", clase: "tormenta", anim: "spin"};
-      if (metar.includes("CAVOK")) return {icono: "☀️", clase: "normal", anim: "spin"};
-      return {icono: "☁️", clase: "normal", anim: "float"};
+      if (metar.includes("TS")) return {icono: "🌩️", clase: "tormenta"};
+      if (metar.includes("RA")) return {icono: "🌧️", clase: "lluvia"};
+      if (metar.includes("FG")) return {icono: "🌫️", clase: "niebla"};
+      if (metar.includes("SN")) return {icono: "❄️", clase: "niebla"};
+      if (metar.includes("WS")) return {icono: "🌪️", clase: "tormenta"};
+      if (metar.includes("CAVOK")) return {icono: "☀️", clase: "normal"};
+      return {icono: "☁️", clase: "normal"};
     }
 
     function obtenerIconosExtras(metar) {
@@ -88,8 +69,7 @@
       panel.innerHTML = "";
 
       try {
-        // Usamos AllOrigins para evitar CORS
-        const resp = await fetch("https://api.allorigins.win/raw?url=http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1");
+        const resp = await fetch("metar.php"); // 👈 ahora apunta a tu proxy PHP
         const html = await resp.text();
 
         const parser = new DOMParser();
@@ -97,25 +77,21 @@
         const texto = doc.body.textContent;
 
         for (let icao in aeropuertos) {
-          // Captura todo el bloque del METAR hasta el siguiente METAR o fin de texto
           const regex = new RegExp(`METAR ${icao}[\\s\\S]*?(?=METAR|$)`, "i");
           const match = texto.match(regex);
           let data = match ? match[0] : "No disponible";
 
-          // Limpiar caracteres invisibles
           data = data.replace(/[\x00-\x1F\x7F]/g, "").trim();
-
-          // Excluir encabezados SABO
           data = data.replace(/SABO.*$/i, "").trim();
 
-          const {icono, clase, anim} = obtenerIcono(data);
+          const {icono, clase} = obtenerIcono(data);
           const extras = obtenerIconosExtras(data);
           const hora = new Date().toLocaleTimeString();
 
           const card = document.createElement("div");
           card.className = `card ${clase}`;
           card.innerHTML = `
-            <h3><span class="icono ${anim}">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
+            <h3><span class="icono">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
             <pre>${data}</pre>
             <div class="extras">Fenómenos detectados: ${extras}</div>
             <div class="hora">Última actualización: ${hora}</div>
@@ -154,21 +130,13 @@
       });
     }
 
-    // Inicializar carga y actualizaciones
     cargarMETAR();
     setInterval(cargarMETAR, intervalo);
     setInterval(actualizarContadores, 1000);
-
-    // Configurar el botón con addEventListener
     document.querySelector(".boton-copiar").addEventListener("click", copiarMETAR);
   </script>
 </body>
 </html>
-
-
-
-
-
 
 
 
