@@ -97,9 +97,16 @@
         const texto = doc.body.textContent;
 
         for (let icao in aeropuertos) {
-          const regex = new RegExp(`METAR ${icao}.*`, "g");
+          // Captura todo el bloque del METAR hasta el siguiente METAR o fin de texto
+          const regex = new RegExp(`METAR ${icao}[\\s\\S]*?(?=METAR|$)`, "i");
           const match = texto.match(regex);
-          const data = match ? match[0] : "No disponible";
+          let data = match ? match[0] : "No disponible";
+
+          // Limpiar caracteres invisibles
+          data = data.replace(/[\x00-\x1F\x7F]/g, "").trim();
+
+          // Excluir encabezados SABO
+          data = data.replace(/SABO.*$/i, "").trim();
 
           const {icono, clase, anim} = obtenerIcono(data);
           const extras = obtenerIconosExtras(data);
@@ -147,7 +154,7 @@
       });
     }
 
-        // Inicializar carga y actualizaciones
+    // Inicializar carga y actualizaciones
     cargarMETAR();
     setInterval(cargarMETAR, intervalo);
     setInterval(actualizarContadores, 1000);
@@ -157,6 +164,8 @@
   </script>
 </body>
 </html>
+
+
 
 
 
