@@ -5,7 +5,7 @@
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: text/plain; charset=UTF-8");
 
-$url = "http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=3";
+$url = "http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1";
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $url);
@@ -24,3 +24,4 @@ if(curl_errno($ch)) {
 
 curl_close($ch);
 ?>
+
