@@ -29,7 +29,7 @@
   <h2>Información Meteorológica Aeronáutica – Bolivia (NAABOL)</h2>
   <button class="boton-copiar">📋 Copiar METAR</button>
   <div class="panel" id="panel"></div>
-  <footer>© 2026 Yamil Quiroz — Panel con datos oficiales de NAABOL</footer>
+  <footer>© 22026 Yamil Quiroz — Panel con datos oficiales de NAABOL</footer>
 
   <script>
     const aeropuertos = {
@@ -71,16 +71,15 @@
       panel.innerHTML = "";
 
       try {
-        // Usamos AllOrigins para evitar CORS en GitHub Pages
         const resp = await fetch("https://api.allorigins.win/raw?url=http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1");
         const texto = await resp.text();
 
         for (let icao in aeropuertos) {
-          const regex = new RegExp(`METAR ${icao}[\\s\\S]*?(?=METAR|$)`, "i");
+          // Buscar directamente por ICAO en lugar de "METAR ICAO"
+          const regex = new RegExp(`${icao}[\\s\\S]*?(?=${Object.keys(aeropuertos).join("|")}|$)`, "i");
           const match = texto.match(regex);
           let data = match ? match[0] : "No disponible";
 
-          // Limpieza: caracteres invisibles y encabezados SABO
           data = data.replace(/[\x00-\x1F\x7F]/g, "").trim();
           data = data.replace(/SABO.*$/i, "").trim();
 
