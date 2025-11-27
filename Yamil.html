@@ -72,7 +72,7 @@
 
       try {
         // Usamos AllOrigins para evitar CORS en GitHub Pages
-        const resp = await fetch("https://api.allorigins.win/raw?url=http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=3");
+        const resp = await fetch("https://api.allorigins.win/raw?url=http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1");
         const texto = await resp.text();
 
         for (let icao in aeropuertos) {
@@ -137,6 +137,7 @@
   </script>
 </body>
 </html>
+
 
 
 
