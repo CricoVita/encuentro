@@ -2,34 +2,105 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Prueba METAR – NAABOL</title>
+  <title>Panel MET Bolivia – NAABOL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="favicon.png">
   <style>
-    body { font-family: monospace; background: #f4f6f9; padding: 20px; }
-    pre { background: #fff; border: 1px solid #ccc; padding: 10px; white-space: pre-wrap; }
+    body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 10px; margin: 0; }
+    h2 { text-align: center; color: #333; font-size: 1.4em; margin: 15px 0; }
+    .panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 10px; }
+    .card { border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 12px; color: #fff; transition: background 1s ease; }
+    .card h3 { margin: 0 0 8px; font-size: 1.1em; display: flex; align-items: center; }
+    pre { background: rgba(255,255,255,0.2); padding: 8px; border-radius: 5px; white-space: pre-wrap; color: #fff; font-size: 0.9em; overflow-x: auto; }
+    .hora, .extras { font-size: 0.8em; margin-top: 6px; }
+    .extras { color: #ffebcd; }
+    .icono { font-size: 1.5em; margin-right: 6px; display: inline-block; }
+    .tormenta { background: linear-gradient(135deg, #8b0000, #b22222); }
+    .lluvia { background: linear-gradient(135deg, #1e3c72, #2a5298); }
+    .niebla { background: linear-gradient(135deg, #555, #888); }
+    .normal { background: linear-gradient(135deg, #2e8b57, #3cb371); }
+    footer { text-align: center; margin-top: 20px; font-size: 0.8em; color: #555; padding: 10px; }
   </style>
 </head>
 <body>
-  <h2>Texto crudo recibido desde NAABOL</h2>
-  <pre id="output">Cargando...</pre>
+  <h2>Información Meteorológica Aeronáutica – Bolivia (NAABOL)</h2>
+  <div class="panel" id="panel"></div>
+  <footer>© 2025 Cristian — Panel con datos oficiales de NAABOL</footer>
 
   <script>
-    async function cargarTexto() {
+    const aeropuertos = {
+      "SLLP": "El Alto - La Paz",
+      "SLCB": "Cochabamba",
+      "SLTR": "Trinidad",
+      "SLVR": "Santa Cruz - Viru Viru",
+      "SLGY": "Guayaramerín",
+      "SLRQ": "Rurrenabaque",
+      "SLRI": "Riberalta"
+    };
+
+    function obtenerIcono(metar) {
+      if (metar.includes("TS")) return {icono: "🌩️", clase: "tormenta"};
+      if (metar.includes("RA")) return {icono: "🌧️", clase: "lluvia"};
+      if (metar.includes("FG")) return {icono: "🌫️", clase: "niebla"};
+      if (metar.includes("SN")) return {icono: "❄️", clase: "niebla"};
+      if (metar.includes("WS")) return {icono: "🌪️", clase: "tormenta"};
+      if (metar.includes("CAVOK")) return {icono: "☀️", clase: "normal"};
+      return {icono: "☁️", clase: "normal"};
+    }
+
+    function obtenerIconosExtras(metar) {
+      let extras = "";
+      if (metar.includes("TS")) extras += "🌩️ Tormenta ";
+      if (metar.includes("RA")) extras += "🌧️ Lluvia ";
+      if (metar.includes("FG")) extras += "🌫️ Niebla ";
+      if (metar.includes("SN")) extras += "❄️ Nieve ";
+      if (metar.includes("WS")) extras += "🌪️ Viento fuerte ";
+      if (metar.includes("CAVOK")) extras += "☀️ Cielo despejado ";
+      return extras || "☁️ Sin fenómenos significativos";
+    }
+
+    async function cargarMETAR() {
+      const panel = document.getElementById("panel");
+      panel.innerHTML = "";
+
       try {
         const resp = await fetch("https://api.allorigins.win/raw?url=http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=3");
         const texto = await resp.text();
-        document.getElementById("output").textContent = texto;
-        console.log("Texto recibido:", texto); // 👈 también lo ves en consola
+
+        // Dividir en líneas
+        const lineas = texto.split("\n");
+
+        for (let icao in aeropuertos) {
+          // Buscar la primera línea que contenga METAR + ICAO
+          const linea = lineas.find(l => l.includes(`METAR ${icao}`) || l.includes(`-METAR ${icao}`));
+          let data = linea ? linea.trim() : "No disponible";
+
+          const {icono, clase} = obtenerIcono(data);
+          const extras = obtenerIconosExtras(data);
+          const hora = new Date().toLocaleTimeString();
+
+          const card = document.createElement("div");
+          card.className = `card ${clase}`;
+          card.innerHTML = `
+            <h3><span class="icono">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
+            <pre>${data}</pre>
+            <div class="extras">Fenómenos detectados: ${extras}</div>
+            <div class="hora">Última actualización: ${hora}</div>
+          `;
+          panel.appendChild(card);
+        }
       } catch (e) {
-        document.getElementById("output").textContent = "Error al obtener datos: " + e;
-        console.error("Error:", e);
+        console.error("Error al obtener datos de NAABOL:", e);
       }
     }
 
-    cargarTexto();
+    cargarMETAR();
+    setInterval(cargarMETAR, 600000); // refrescar cada 10 minutos
   </script>
 </body>
 </html>
+
+
 
 
 
