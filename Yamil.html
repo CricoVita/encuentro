@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>Panel MET Bolivia – NAABOL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 👇 Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png">
   <style>
     body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 10px; margin: 0; }
     h2 { text-align: center; color: #333; font-size: 1.4em; margin: 15px 0; }
@@ -35,7 +37,7 @@
       "SLCB": "Cochabamba",
       "SLTR": "Trinidad",
       "SLVR": "Santa Cruz - Viru Viru",
-      "SLGY": "Guayaramerín",
+      "SLGM": "Guayaramerín",
       "SLRQ": "Rurrenabaque",
       "SLRI": "Riberalta"
     };
@@ -69,15 +71,10 @@
       panel.innerHTML = "";
 
       try {
-        const resp = await fetch("metar.php"); // usa tu proxy PHP en el mismo dominio
-        const html = await resp.text();
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-        const texto = doc.body.textContent;
+        const resp = await fetch("metar.php"); // usa tu proxy PHP
+        const texto = await resp.text();       // 👈 directo, sin DOMParser
 
         for (let icao in aeropuertos) {
-          // Captura todo el bloque del METAR hasta el siguiente METAR o fin de texto
           const regex = new RegExp(`METAR ${icao}[\\s\\S]*?(?=METAR|$)`, "i");
           const match = texto.match(regex);
           let data = match ? match[0] : "No disponible";
@@ -141,25 +138,6 @@
 </html>
 
 
-    function copiarMETAR() {
-      let texto = "";
-      document.querySelectorAll(".card pre").forEach(pre => {
-        texto += pre.textContent.trim() + "\n\n";
-      });
-      navigator.clipboard.writeText(texto).then(() => {
-        alert("✅ METAR copiados al portapapeles");
-      }).catch(err => {
-        console.error("Error al copiar:", err);
-      });
-    }
-
-    cargarMETAR();
-    setInterval(cargarMETAR, intervalo);
-    setInterval(actualizarContadores, 1000);
-    document.querySelector(".boton-copiar").addEventListener("click", copiarMETAR);
-  </script>
-</body>
-</html>
 
 
 
