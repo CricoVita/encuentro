@@ -7,164 +7,167 @@
   <link rel="icon" type="image/png" href="favicon.png">
 
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 10px; margin: 0; }
-    h2 { text-align: center; color: #333; font-size: 1.4em; margin: 15px 0; }
-    .panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 10px; }
-    .card { border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 12px; color: #fff; transition: background 1s ease; }
-    .card h3 { margin: 0 0 8px; font-size: 1.1em; display: flex; align-items: center; }
-    pre { background: rgba(255,255,255,0.2); padding: 8px; border-radius: 5px; white-space: pre-wrap; color: #fff; font-size: 0.9em; overflow-x: auto; }
-    .hora, .contador, .extras { font-size: 0.8em; margin-top: 6px; }
-    .extras { color: #ffebcd; }
-    .icono { font-size: 1.5em; margin-right: 6px; display: inline-block; }
+    body { margin:0; font-family:Arial, sans-serif; transition:background 0.8s ease; }
+    .dia { background:linear-gradient(to top,#87CEEB,#ffffff); color:#222; }
+    .dia::before { content:""; position:fixed; inset:0; background:url('nubes.png') repeat-x; background-size:300px auto; animation:moverNubes 60s linear infinite; opacity:0.25; z-index:-1; }
+    .noche { background:radial-gradient(circle at 50% 10%,#0b0c10,#000); color:#ddd; }
+    .noche::before { content:""; position:fixed; inset:0; background:url('estrellas.png') repeat-x; background-size:300px auto; animation:moverEstrellas 90s linear infinite; opacity:0.38; z-index:-2; }
+    .noche::after { content:""; position:fixed; top:24px; right:36px; width:160px; height:160px; background:url('luna.png') no-repeat; background-size:contain; opacity:0.8; z-index:-1; }
 
-    .tormenta { background: linear-gradient(135deg, #8b0000, #b22222); }
-    .lluvia { background: linear-gradient(135deg, #1e3c72, #2a5298); }
-    .niebla { background: linear-gradient(135deg, #555, #888); }
-    .normal { background: linear-gradient(135deg, #2e8b57, #3cb371); }
+    @keyframes moverNubes { from{background-position:0 0;} to{background-position:100% 0;} }
+    @keyframes moverEstrellas { from{background-position:0 0;} to{background-position:100% 0;} }
 
-    .bounce { animation: bounce 2s infinite; }
-    @keyframes bounce { 40% { transform: translateY(-8px); } 60% { transform: translateY(-4px); } }
-    .blink { animation: blink 1.5s infinite; }
-    @keyframes blink { 25%,75% { opacity: 0.3; } }
-    .spin { animation: spin 4s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .fall { animation: fall 3s infinite linear; }
-    @keyframes fall { 100% { transform: translateY(10px); opacity: 0.7; } }
-    .fade { animation: fade 4s infinite; }
-    @keyframes fade { 50% { opacity: 0.4; } }
-    .float { animation: float 5s ease-in-out infinite; }
-    @keyframes float { 50% { transform: translateY(-6px); } }
+    h1 { text-align:center; font-size:1.2rem; margin:10px 0; }
+    .panel { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:20px; padding:0 12px 12px; }
+    .card { border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.12); padding:12px; color:#fff; }
+    .card h3 { margin:0 0 8px; font-size:1.05em; display:flex; align-items:center; justify-content:flex-start; gap:8px; }
+    .icao { font-weight:700; opacity:0.9; }
+    pre { background:rgba(255,255,255,0.18); padding:8px; border-radius:6px; white-space:pre-wrap; color:#fff; font-size:0.9em; margin:6px 0; }
+    .extras { font-size:0.82em; color:#ffebcd; margin-top:6px; }
+    .hora,.contador { font-size:0.82em; margin-top:6px; }
+    .icono { font-size:1.4em; margin-right:6px; }
 
-    footer { text-align: center; margin-top: 20px; font-size: 0.8em; color: #555; padding: 10px; }
-    .boton-copiar { display:block; margin:10px auto; padding:8px 15px; background:#2e8b57; color:#fff; border:none; border-radius:5px; cursor:pointer; }
-    .boton-copiar:hover { background:#3cb371; }
+    .tormenta{background:linear-gradient(135deg,#7a1010,#b22222);}
+    .lluvia{background:linear-gradient(135deg,#1e3c72,#2a5298);}
+    .niebla{background:linear-gradient(135deg,#5a5a5a,#888);}
+    .nieve{background:linear-gradient(135deg,#4f6d8c,#8aa9c2);}
+    .viento{background:linear-gradient(135deg,#4b2e83,#6b5ca5);}
+    .normal{background:linear-gradient(135deg,#2e8b57,#3cb371);}
+
+    .boton-copiar{display:block;margin:10px auto;padding:8px 15px;background:#2e8b57;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;}
+    .boton-copiar:hover{background:#3cb371;}
+    footer{text-align:center;margin-top:10px;font-size:0.82em;color:#aaa;padding:10px;}
   </style>
 </head>
 <body>
-  <h2>Información Meteorológica Aeronáutica – Bolivia (NAABOL)</h2>
-  <button class="boton-copiar">📋 Copiar METAR</button>
+  <h1>Información Meteorológica Aeronáutica – Bolivia (NAABOL)</h1>
+  <button class="boton-copiar" id="btnCopiar">📋 Copiar METAR</button>
   <div class="panel" id="panel"></div>
-
-  <footer>
-    © 2026 Yamil Quiroz — Panel con datos oficiales de NAABOL
-  </footer>
+  <footer>© 2026 Cristian — Panel con datos oficiales de NAABOL</footer>
 
   <script>
-    const aeropuertos = {
-      "SLLP": "El Alto - La Paz",
-      "SLCB": "Cochabamba",
-      "SLTR": "Trinidad",
-      "SLVR": "Santa Cruz - Viru Viru",
-      "SLGM": "Guayaramerín",
-      "SLRQ": "Rurrenabaque",
-      "SLRI": "Riberalta"
-    };
+    function aplicarFondo(){
+      const hora=new Date().getHours();
+      document.body.className=(hora>=6&&hora<18)?"dia":"noche";
+    }
+    aplicarFondo(); setInterval(aplicarFondo,60000);
 
-    const intervalo = 600000; 
-    let proximaActualizacion = Date.now() + intervalo;
+    const aeropuertos={"SLLP":"El Alto - La Paz","SLCB":"Cochabamba","SLTR":"Trinidad","SLVR":"Santa Cruz - Viru Viru","SLGM":"Guayaramerín","SLRQ":"Rurrenabaque","SLRI":"Riberalta"};
+    const INTERVALO_MS=600000; let proximaActualizacion=Date.now()+INTERVALO_MS;
 
-    function obtenerIcono(metar) {
-      if (metar.includes("TS")) return {icono: "🌩️", clase: "tormenta", anim: "bounce blink"};
-      if (metar.includes("RA")) return {icono: "🌧️", clase: "lluvia", anim: "fall"};
-      if (metar.includes("FG")) return {icono: "🌫️", clase: "niebla", anim: "fade"};
-      if (metar.includes("SN")) return {icono: "❄️", clase: "niebla", anim: "fall"};
-      if (metar.includes("WS")) return {icono: "🌪️", clase: "tormenta", anim: "spin"};
-      if (metar.includes("CAVOK")) return {icono: "☀️", clase: "normal", anim: "spin"};
-      return {icono: "☁️", clase: "normal", anim: "float"};
+    function obtenerIcono(metar){
+      const has=s=>metar.includes(s);
+      if(has("TS"))return{icono:"🌩️",clase:"tormenta"};
+      if(has("RA"))return{icono:"🌧️",clase:"lluvia"};
+      if(has("FG")||has("BR"))return{icono:"🌫️",clase:"niebla"};
+      if(has("SN"))return{icono:"❄️",clase:"nieve"};
+      if(has("WS"))return{icono:"🌪️",clase:"viento"};
+      if(has("CAVOK"))return{icono:"☀️",clase:"normal"};
+      return{icono:"☁️",clase:"normal"};
     }
 
-    function obtenerIconosExtras(metar) {
-      let extras = "";
-      if (metar.includes("TS")) extras += "🌩️ Tormenta ";
-      if (metar.includes("RA")) extras += "🌧️ Lluvia ";
-      if (metar.includes("FG")) extras += "🌫️ Niebla ";
-      if (metar.includes("SN")) extras += "❄️ Nieve ";
-      if (metar.includes("WS")) extras += "🌪️ Viento fuerte ";
-      if (metar.includes("CAVOK")) extras += "☀️ Cielo despejado ";
-      return extras || "☁️ Sin fenómenos significativos";
+    function obtenerIconosExtras(metar){
+      const extras=[]; const has=s=>metar.includes(s);
+      if(has("TS"))extras.push("🌩️ Tormenta");
+      if(has("RA"))extras.push("🌧️ Lluvia");
+      if(has("FG")||has("BR"))extras.push("🌫️ Niebla");
+      if(has("SN"))extras.push("❄️ Nieve");
+      if(has("WS"))extras.push("🌪️ Viento fuerte");
+      if(has("CAVOK"))extras.push("☀️ Cielo despejado");
+      return extras.length?extras.join(" · "):"☁️ Sin fenómenos significativos";
     }
 
-    async function cargarMETAR() {
-      const panel = document.getElementById("panel");
-      panel.innerHTML = "";
+    // Nueva función: METAR + SPECI
+    function extraeMetarYSPECI(texto,icao){
+      const reMetar=new RegExp(String.raw`(?:^|\n)\s*-?\s*METAR\s+${icao}\b.*`,"i");
+      const reSpe=new RegExp(String.raw`(?:^|\n)\s*-?\s*SPECI\s+${icao}\b.*`,"i");
+      const mMetar=texto.match(reMetar);
+      const mSpe=texto.match(reSpe);
+      const limpiar=str=>str?str.replace(/[\x00-\x1F\x7F]/g," ").replace(/\s+/g," ").trim():null;
+      const bloqueMetar=limpiar(mMetar?mMetar[0]:null);
+      const bloqueSpe=limpiar(mSpe?mSpe[0]:null);
+      if(bloqueMetar&&bloqueSpe)return bloqueMetar+"\n"+bloqueSpe;
+      return bloqueMetar||bloqueSpe||"No disponible";
+    }
 
-      try {
-        // Usamos corsproxy.io para evitar CORS en GitHub Pages
-        const resp = await fetch("https://corsproxy.io/?http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1");
-        const html = await resp.text();
+    async function cargarMETAR(){
+      const panel=document.getElementById("panel"); panel.innerHTML="";
+      try{
+        const origen='http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1';
+        const url='https://api.allorigins.win/raw?url='+encodeURIComponent(origen);
+        const resp=await fetch(url,{cache:"no-store"});
+        if(!resp.ok)throw new Error(`HTTP ${resp.status}`);
+        const html=await resp.text();
+        const parser=new DOMParser(); const doc=parser.parseFromString(html,"text/html");
+        const textoPlano=(doc&&doc.body)?doc.body.textContent:html;
 
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-        const texto = doc.body.textContent;
+        for(const icao of Object.keys(aeropuertos)){
+          let data=extraeMetarYSPECI(textoPlano,icao);
+          const {icono,clase}=obtenerIcono(data);
+          const extras=obtenerIconosExtras(data);
+          const horaLocal=new Date().toLocaleTimeString();
 
-        for (let icao in aeropuertos) {
-          // Captura todo el bloque del METAR hasta el siguiente METAR o fin de texto
-          const regex = new RegExp(`-?METAR ${icao}[\\s\\S]*?(?=-?METAR|$)`, "i");
-          const match = texto.match(regex);
-          let data = match ? match[0] : "No disponible";
-
-          // Limpiar caracteres invisibles
-          data = data.replace(/[\x00-\x1F\x7F]/g, "").trim();
-
-          // Excluir encabezados SABO
-          data = data.replace(/SABO.*$/i, "").trim();
-
-          const {icono, clase, anim} = obtenerIcono(data);
-          const extras = obtenerIconosExtras(data);
-          const hora = new Date().toLocaleTimeString();
-
-          const card = document.createElement("div");
-          card.className = `card ${clase}`;
-          card.innerHTML = `
-            <h3><span class="icono ${anim}">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
+          const card=document.createElement("div");
+          card.className=`card ${clase}`;
+          card.innerHTML=`
+            <h3><span class="icono">${icono}</span>${aeropuertos[icao]} <span class="icao">(${icao})</span></h3>
             <pre>${data}</pre>
-            <div class="extras">Fenómenos detectados: ${extras}</div>
-            <div class="hora">Última actualización: ${hora}</div>
+            <div class="extras">Fenómenos: ${extras}</div>
+            <div class="hora">Última actualización: ${horaLocal}</div>
             <div class="contador" id="contador-${icao}"></div>
           `;
           panel.appendChild(card);
         }
-      } catch (e) {
-        console.error("Error al obtener datos de NAABOL:", e);
+      } catch (err) {
+        const error = document.createElement("div");
+        error.className = "card niebla";
+        error.innerHTML = `
+          <h3>⚠️ Error al obtener datos</h3>
+          <pre>${(err && err.message) ? err.message : "Error desconocido"}</pre>
+          <div class="extras">Intentaremos nuevamente en el próximo ciclo.</div>
+        `;
+        panel.appendChild(error);
+        console.error("Error al obtener datos de NAABOL:", err);
       }
 
-      proximaActualizacion = Date.now() + intervalo;
+      proximaActualizacion = Date.now() + INTERVALO_MS;
     }
 
     function actualizarContadores() {
-      for (let icao in aeropuertos) {
-        const contador = document.getElementById(`contador-${icao}`);
-        if (contador) {
-          const restante = Math.max(0, proximaActualizacion - Date.now());
-          const minutos = Math.floor(restante / 60000);
-          const segundos = Math.floor((restante % 60000) / 1000);
-          contador.textContent = `Próxima actualización en ${minutos}:${segundos.toString().padStart(2, '0')}`;
-        }
+      for (const icao of Object.keys(aeropuertos)) {
+        const el = document.getElementById(`contador-${icao}`);
+        if (!el) continue;
+        const restante = Math.max(0, proximaActualizacion - Date.now());
+        const minutos = Math.floor(restante / 60000);
+        const segundos = Math.floor((restante % 60000) / 1000);
+        el.textContent = `Próxima actualización en ${minutos}:${segundos.toString().padStart(2, "0")}`;
       }
     }
 
-        function copiarMETAR() {
-      let texto = "";
-      document.querySelectorAll(".card pre").forEach(pre => {
-        texto += pre.textContent.trim() + "\n\n";
-      });
-      navigator.clipboard.writeText(texto).then(() => {
-        alert("✅ METAR copiados al portapapeles");
-      }).catch(err => {
-        console.error("Error al copiar:", err);
-      });
+    function copiarMETAR() {
+      const bloques = Array.from(document.querySelectorAll(".card pre"))
+        .map(pre => pre.textContent.trim())
+        .filter(t => t && t !== "No disponible");
+      const texto = bloques.join("\n\n");
+      if (!texto) {
+        alert("No hay METAR/SPECI disponibles para copiar aún.");
+        return;
+      }
+      navigator.clipboard.writeText(texto)
+        .then(() => alert("✅ METAR/SPECI copiados al portapapeles"))
+        .catch(err => console.error("Error al copiar:", err));
     }
 
-    // Inicializar carga y actualizaciones
+    // Inicialización
     cargarMETAR();
-    setInterval(cargarMETAR, intervalo);
+    setInterval(cargarMETAR, INTERVALO_MS);
     setInterval(actualizarContadores, 1000);
-
-    // Configurar el botón con addEventListener
-    document.querySelector(".boton-copiar").addEventListener("click", copiarMETAR);
+    document.getElementById("btnCopiar").addEventListener("click", copiarMETAR);
   </script>
 </body>
 </html>
+
+
 
 
 
