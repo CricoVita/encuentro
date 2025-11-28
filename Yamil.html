@@ -42,7 +42,7 @@
 </head>
 <body>
   <h2>Información Meteorológica Aeronáutica – Bolivia (NAABOL)</h2>
-  <button class="boton-copiar">📋 Copiar METAR/SPECI</button>
+  <button class="boton-copiar">📋 Copiar METAR</button>
   <div class="panel" id="panel"></div>
 
   <footer>
@@ -153,7 +153,7 @@
         texto += pre.textContent.trim() + "\n\n";
       });
       navigator.clipboard.writeText(texto).then(() => {
-        alert("✅ METAR/SPECI copiados al portapapeles");
+        alert("✅ METAR copiados al portapapeles");
       }).catch(err => {
         console.error("Error al copiar:", err);
       });
@@ -169,6 +169,7 @@
   </script>
 </body>
 </html>
+
 
 
 
