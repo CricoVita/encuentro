@@ -90,7 +90,7 @@
 
       try {
         // Usamos corsproxy.io para evitar CORS en GitHub Pages
-        const resp = await fetch("https://corsproxy.io/?http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=3");
+        const resp = await fetch("https://corsproxy.io/?http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1");
         const html = await resp.text();
 
         const parser = new DOMParser();
@@ -169,6 +169,7 @@
   </script>
 </body>
 </html>
+
 
 
 
