@@ -11,7 +11,7 @@
     h2 { text-align: center; color: #333; font-size: 1.4em; margin: 15px 0; }
     .panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 10px; }
     .card { border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 12px; color: #fff; transition: background 1s ease; }
-    .card h3 { margin: 0 0 8px; font-size: 1.1em; display: flex; align-items: center; justify-content: flex-start; }
+    .card h3 { margin: 0 0 8px; font-size: 1.1em; display: flex; align-items: center; }
     pre { background: rgba(255,255,255,0.2); padding: 8px; border-radius: 5px; white-space: pre-wrap; color: #fff; font-size: 0.9em; overflow-x: auto; }
     .hora, .contador, .extras { font-size: 0.8em; margin-top: 6px; }
     .extras { color: #ffebcd; }
@@ -21,6 +21,19 @@
     .lluvia { background: linear-gradient(135deg, #1e3c72, #2a5298); }
     .niebla { background: linear-gradient(135deg, #555, #888); }
     .normal { background: linear-gradient(135deg, #2e8b57, #3cb371); }
+
+    .bounce { animation: bounce 2s infinite; }
+    @keyframes bounce { 40% { transform: translateY(-8px); } 60% { transform: translateY(-4px); } }
+    .blink { animation: blink 1.5s infinite; }
+    @keyframes blink { 25%,75% { opacity: 0.3; } }
+    .spin { animation: spin 4s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .fall { animation: fall 3s infinite linear; }
+    @keyframes fall { 100% { transform: translateY(10px); opacity: 0.7; } }
+    .fade { animation: fade 4s infinite; }
+    @keyframes fade { 50% { opacity: 0.4; } }
+    .float { animation: float 5s ease-in-out infinite; }
+    @keyframes float { 50% { transform: translateY(-6px); } }
 
     footer { text-align: center; margin-top: 20px; font-size: 0.8em; color: #555; padding: 10px; }
     .boton-copiar { display:block; margin:10px auto; padding:8px 15px; background:#2e8b57; color:#fff; border:none; border-radius:5px; cursor:pointer; }
@@ -76,6 +89,7 @@
       panel.innerHTML = "";
 
       try {
+        // Usamos corsproxy.io para evitar CORS en GitHub Pages
         const resp = await fetch("https://corsproxy.io/?http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1");
         const html = await resp.text();
 
@@ -116,19 +130,12 @@
         }
       } catch (e) {
         console.error("Error al obtener datos de NAABOL:", e);
-        const errorCard = document.createElement("div");
-        errorCard.className = "card niebla";
-        errorCard.innerHTML = `
-          <h3>⚠️ Error al obtener datos</h3>
-          <pre>${e.message}</pre>
-        `;
-        panel.appendChild(errorCard);
       }
 
       proximaActualizacion = Date.now() + intervalo;
     }
 
-    function actualizarContadores() {
+        function actualizarContadores() {
       for (let icao in aeropuertos) {
         const contador = document.getElementById(`contador-${icao}`);
         if (contador) {
@@ -156,11 +163,12 @@
     cargarMETAR();
     setInterval(cargarMETAR, intervalo);
     setInterval(actualizarContadores, 1000);
+
+    // Configurar el botón con addEventListener
     document.querySelector(".boton-copiar").addEventListener("click", copiarMETAR);
   </script>
 </body>
 </html>
-
 
 
 
