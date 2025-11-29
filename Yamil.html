@@ -79,16 +79,27 @@ body.dark-mode footer { color: #aaa; }
   <script>
 
 const toggle = document.getElementById("toggleMode");
-// Por defecto: modo claro → sol
-toggle.textContent = "☀️";
+
+// Al cargar la página, revisar si hay preferencia guardada
+const savedMode = localStorage.getItem("theme");
+if (savedMode === "dark") {
+  document.body.classList.add("dark-mode");
+  toggle.textContent = "🌙"; // modo oscuro
+} else {
+  toggle.textContent = "☀️"; // modo claro
+}
 
 toggle.addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
   if (document.body.classList.contains("dark-mode")) {
     toggle.textContent = "🌙"; // modo oscuro
+    localStorage.setItem("theme", "dark");
   } else {
     toggle.textContent = "☀️"; // modo claro
+    localStorage.setItem("theme", "light");
   }
+});
+
 });
 
 
@@ -212,6 +223,7 @@ toggle.addEventListener("click", () => {
   </script>
 </body>
 </html>
+
 
 
 
