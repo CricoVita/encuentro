@@ -7,6 +7,27 @@
   <link rel="icon" type="image/png" href="favicon.png">
 
   <style>
+      body.dark-mode {
+  background: #1e1e1e;
+  color: #ddd;
+}
+
+body.dark-mode h2 {
+  color: #eee;
+}
+
+body.dark-mode .card {
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(255,255,255,0.1);
+}
+
+body.dark-mode pre {
+  background: rgba(255,255,255,0.1);
+}
+
+body.dark-mode footer {
+  color: #aaa;
+}
     body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 10px; margin: 0; }
     h2 { text-align: center; color: #333; font-size: 1.4em; margin: 15px 0; }
     .panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 10px; }
@@ -39,10 +60,13 @@
     .boton-copiar { display:block; margin:10px auto; padding:8px 15px; background:#2e8b57; color:#fff; border:none; border-radius:5px; cursor:pointer; }
     .boton-copiar:hover { background:#3cb371; }
   </style>
+
+
 </head>
 <body>
   <h2>Información Meteorológica Aeronáutica – Bolivia (NAABOL)</h2>
   <button class="boton-copiar">📋 Copiar METAR</button>
+  <button id="toggleMode">🌙 Cambiar modo</button>
   <div class="panel" id="panel"></div>
 
   <footer>
@@ -50,6 +74,17 @@
   </footer>
 
   <script>
+
+    document.getElementById("toggleMode").addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
+  const btn = document.getElementById("toggleMode");
+  if (document.body.classList.contains("dark-mode")) {
+    btn.textContent = "☀️ Modo claro";
+  } else {
+    btn.textContent = "🌙 Modo oscuro";
+  }
+});
+
     const aeropuertos = {
       "SLLP": "El Alto - La Paz",
       "SLCB": "Cochabamba",
@@ -169,6 +204,7 @@
   </script>
 </body>
 </html>
+
 
 
 
