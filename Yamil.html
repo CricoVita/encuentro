@@ -7,31 +7,7 @@
   <link rel="icon" type="image/png" href="favicon.png">
 
   <style>
-    
-#toggleMode {
-  font-size: 1.6em;
-  cursor: pointer;
-  margin: 10px;
-  display: inline-block;
-  transition: transform 0.3s ease;
-}
-#toggleMode:hover {
-  transform: scale(1.2);
-}
-
-body.dark-mode {
-  background: #1e1e1e;
-  color: #ddd;
-}
-body.dark-mode h2 { color: #eee; }
-body.dark-mode .card { color: #fff; box-shadow: 0 2px 8px rgba(255,255,255,0.1); }
-body.dark-mode pre { background: rgba(255,255,255,0.1); }
-body.dark-mode footer { color: #aaa; }
-
-
-
-    
-    body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 10px; margin: 0; }
+    body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 10px; margin: 0; transition: background 0.5s, color 0.5s; }
     h2 { text-align: center; color: #333; font-size: 1.4em; margin: 15px 0; }
     .panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 10px; }
     .card { border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 12px; color: #fff; transition: background 1s ease; }
@@ -62,48 +38,36 @@ body.dark-mode footer { color: #aaa; }
     footer { text-align: center; margin-top: 20px; font-size: 0.8em; color: #555; padding: 10px; }
     .boton-copiar { display:block; margin:10px auto; padding:8px 15px; background:#2e8b57; color:#fff; border:none; border-radius:5px; cursor:pointer; }
     .boton-copiar:hover { background:#3cb371; }
+
+    /* Icono sol/luna */
+    #toggleMode {
+      font-size: 1.6em;
+      cursor: pointer;
+      margin: 10px;
+      display: inline-block;
+      transition: transform 0.3s ease;
+    }
+    #toggleMode:hover { transform: scale(1.2); }
+
+    /* Modo oscuro */
+    body.dark-mode { background: #1e1e1e; color: #ddd; }
+    body.dark-mode h2 { color: #eee; }
+    body.dark-mode .card { color: #fff; box-shadow: 0 2px 8px rgba(255,255,255,0.1); }
+    body.dark-mode pre { background: rgba(255,255,255,0.1); }
+    body.dark-mode footer { color: #aaa; }
   </style>
-
-
 </head>
 <body>
   <h2>Información Meteorológica Aeronáutica – Bolivia (NAABOL)</h2>
   <span id="toggleMode">☀️</span>
-  <button class="boton-copiar">📋 Copiar METAR</button>
-   <div class="panel" id="panel"></div>
+  <button class="boton-copiar">📋 Copiar METAR/SPECI</button>
+  <div class="panel" id="panel"></div>
 
   <footer>
     © 2026 Yamil Quiroz — Panel con datos oficiales de NAABOL
   </footer>
 
   <script>
-
-const toggle = document.getElementById("toggleMode");
-
-// Al cargar la página, revisar si hay preferencia guardada
-const savedMode = localStorage.getItem("theme");
-if (savedMode === "dark") {
-  document.body.classList.add("dark-mode");
-  toggle.textContent = "🌙"; // modo oscuro
-} else {
-  toggle.textContent = "☀️"; // modo claro
-}
-
-toggle.addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
-  if (document.body.classList.contains("dark-mode")) {
-    toggle.textContent = "🌙"; // modo oscuro
-    localStorage.setItem("theme", "dark");
-  } else {
-    toggle.textContent = "☀️"; // modo claro
-    localStorage.setItem("theme", "light");
-  }
-});
-
-});
-
-
-
     const aeropuertos = {
       "SLLP": "El Alto - La Paz",
       "SLCB": "Cochabamba",
@@ -143,7 +107,6 @@ toggle.addEventListener("click", () => {
       panel.innerHTML = "";
 
       try {
-        // Usamos corsproxy.io para evitar CORS en GitHub Pages
         const resp = await fetch("https://corsproxy.io/?http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1");
         const html = await resp.text();
 
@@ -152,7 +115,6 @@ toggle.addEventListener("click", () => {
         const texto = doc.body.textContent;
 
         for (let icao in aeropuertos) {
-          // Buscar METAR y SPECI del mismo ICAO
           const reMetar = new RegExp(`-?METAR ${icao}[\\s\\S]*?(?=-?(METAR|SPECI)|$)`, "i");
           const reSpe   = new RegExp(`-?SPECI ${icao}[\\s\\S]*?(?=-?(METAR|SPECI)|$)`, "i");
 
@@ -164,7 +126,6 @@ toggle.addEventListener("click", () => {
           if (mSpe)   data += "\n" + mSpe[0].replace(/[\x00-\x1F\x7F]/g,"").trim();
           if (!data)  data = "No disponible";
 
-          // Excluir encabezados SABO
           data = data.replace(/SABO.*$/i, "").trim();
 
           const {icono, clase, anim} = obtenerIcono(data);
@@ -174,6 +135,8 @@ toggle.addEventListener("click", () => {
           const card = document.createElement("div");
           card.className = `card ${clase}`;
           card.innerHTML = `
+            <h3><span class="icono ${anim}">${icono}</span>${aeropuertos
+                       card.innerHTML = `
             <h3><span class="icono ${anim}">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
             <pre>${data}</pre>
             <div class="extras">Fenómenos detectados: ${extras}</div>
@@ -189,7 +152,7 @@ toggle.addEventListener("click", () => {
       proximaActualizacion = Date.now() + intervalo;
     }
 
-        function actualizarContadores() {
+    function actualizarContadores() {
       for (let icao in aeropuertos) {
         const contador = document.getElementById(`contador-${icao}`);
         if (contador) {
@@ -207,7 +170,7 @@ toggle.addEventListener("click", () => {
         texto += pre.textContent.trim() + "\n\n";
       });
       navigator.clipboard.writeText(texto).then(() => {
-        alert("✅ METAR copiados al portapapeles");
+        alert("✅ METAR/SPECI copiados al portapapeles");
       }).catch(err => {
         console.error("Error al copiar:", err);
       });
@@ -218,11 +181,33 @@ toggle.addEventListener("click", () => {
     setInterval(cargarMETAR, intervalo);
     setInterval(actualizarContadores, 1000);
 
-    // Configurar el botón con addEventListener
+    // Configurar el botón copiar
     document.querySelector(".boton-copiar").addEventListener("click", copiarMETAR);
+
+    // Configurar el icono sol/luna con persistencia
+    const toggle = document.getElementById("toggleMode");
+    const savedMode = localStorage.getItem("theme");
+    if (savedMode === "dark") {
+      document.body.classList.add("dark-mode");
+      toggle.textContent = "🌙";
+    } else {
+      toggle.textContent = "☀️";
+    }
+
+    toggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+      if (document.body.classList.contains("dark-mode")) {
+        toggle.textContent = "🌙";
+        localStorage.setItem("theme", "dark");
+      } else {
+        toggle.textContent = "☀️";
+        localStorage.setItem("theme", "light");
+      }
+    });
   </script>
 </body>
 </html>
+                                                
 
 
 
