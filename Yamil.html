@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Panel MET Bolivia – </title>
+  <title>Panel MET Bolivia – CheckWX</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="favicon.png">
 
@@ -113,21 +113,26 @@
           });
 
           const data = await resp.json();
+
           let metar = "No disponible";
+          let speci = "";
 
           if (data && data.data && data.data.length > 0) {
-            metar = data.data[0];
+            metar = data.data.find(x => x.startsWith("METAR")) || "No disponible";
+            speci = data.data.find(x => x.startsWith("SPECI")) || "";
           }
 
-          const {icono, clase, anim} = obtenerIcono(metar);
-          const extras = obtenerIconosExtras(metar);
+          const textoFinal = speci ? `${metar}\n${speci}` : metar;
+
+          const {icono, clase, anim} = obtenerIcono(textoFinal);
+          const extras = obtenerIconosExtras(textoFinal);
           const hora = new Date().toLocaleTimeString();
 
           const card = document.createElement("div");
           card.className = `card ${clase}`;
           card.innerHTML = `
             <h3><span class="icono ${anim}">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
-            <pre>${metar}</pre>
+            <pre>${textoFinal}</pre>
             <div class="extras">Fenómenos detectados: ${extras}</div>
             <div class="hora">Última actualización: ${hora}</div>
             <div class="contador" id="contador-${icao}"></div>
@@ -160,7 +165,7 @@
         texto += pre.textContent.trim() + "\n\n";
       });
       navigator.clipboard.writeText(texto).then(() => {
-        alert("✅ METAR copiados al portapapeles");
+        alert("✅ METAR/SPECI copiados al portapapeles");
       });
     }
 
@@ -194,6 +199,8 @@
   </script>
 </body>
 </html>
+
+
 
 
 
