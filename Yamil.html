@@ -128,7 +128,9 @@
 
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
-        const texto = doc.body.textContent;
+
+        doc.querySelectorAll("script, style, nav, footer, header, noscript").forEach(e => e.remove());
+        const texto = doc.body.innerText;
 
         for (let icao in aeropuertos) {
           const reMetar = new RegExp(`-?METAR ${icao}[\\s\\S]*?(?=-?(METAR|SPECI)|$)`, "i");
@@ -218,44 +220,6 @@
   </script>
 </body>
 </html>
-
-
-                                                
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
