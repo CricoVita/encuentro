@@ -107,7 +107,7 @@
       panel.innerHTML = "";
 
       try {
-        const resp = await fetch("https://thingproxy.freeboard.io/fetch/http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1");
+        const resp = await fetch("https://corsproxy.io/?http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1&cachebuster=12345");
         const html = await resp.text();
 
         const parser = new DOMParser();
@@ -207,6 +207,7 @@
   </script>
 </body>
 </html>
+
 
 
 
