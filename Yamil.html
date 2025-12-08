@@ -39,6 +39,7 @@
     .boton-copiar { display:block; margin:10px auto; padding:8px 15px; background:#2e8b57; color:#fff; border:none; border-radius:5px; cursor:pointer; }
     .boton-copiar:hover { background:#3cb371; }
 
+    /* Icono sol/luna */
     #toggleMode {
       font-size: 1.6em;
       cursor: pointer;
@@ -48,6 +49,7 @@
     }
     #toggleMode:hover { transform: scale(1.2); }
 
+    /* Modo oscuro */
     body.dark-mode { background: #1e1e1e; color: #ddd; }
     body.dark-mode h2 { color: #eee; }
     body.dark-mode .card { color: #fff; box-shadow: 0 2px 8px rgba(255,255,255,0.1); }
@@ -76,25 +78,7 @@
       "SLRI": "Riberalta"
     };
 
-    const proxys = [
-      "https://thingproxy.freeboard.io/fetch/",
-      "https://api.allorigins.win/raw?url=",
-      "https://corsproxy.io/?"
-    ];
-
-    async function fetchConProxy(url) {
-      for (let proxy of proxys) {
-        try {
-          const resp = await fetch(proxy + url);
-          if (resp.ok) return await resp.text();
-        } catch (e) {
-          console.warn("Proxy falló:", proxy);
-        }
-      }
-      throw new Error("Ningún proxy respondió");
-    }
-
-    const intervalo = 600000;
+    const intervalo = 600000; 
     let proximaActualizacion = Date.now() + intervalo;
 
     function obtenerIcono(metar) {
@@ -123,14 +107,12 @@
       panel.innerHTML = "";
 
       try {
-        const urlNAABOL = "http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1";
-        const html = await fetchConProxy(urlNAABOL);
+        const resp = await fetch("https://thingproxy.freeboard.io/fetch/http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1");
+        const html = await resp.text();
 
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
-
-        doc.querySelectorAll("script, style, nav, footer, header, noscript").forEach(e => e.remove());
-        const texto = doc.body.innerText;
+        const texto = doc.body.textContent;
 
         for (let icao in aeropuertos) {
           const reMetar = new RegExp(`-?METAR ${icao}[\\s\\S]*?(?=-?(METAR|SPECI)|$)`, "i");
@@ -152,7 +134,7 @@
 
           const card = document.createElement("div");
           card.className = `card ${clase}`;
-          card.innerHTML = `
+                   card.innerHTML = `
             <h3><span class="icono ${anim}">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
             <pre>${data}</pre>
             <div class="extras">Fenómenos detectados: ${extras}</div>
@@ -187,15 +169,20 @@
       });
       navigator.clipboard.writeText(texto).then(() => {
         alert("✅ METAR/SPECI copiados al portapapeles");
+      }).catch(err => {
+        console.error("Error al copiar:", err);
       });
     }
 
+    // Inicializar carga y actualizaciones
     cargarMETAR();
     setInterval(cargarMETAR, intervalo);
     setInterval(actualizarContadores, 1000);
 
+    // Configurar el botón copiar
     document.querySelector(".boton-copiar").addEventListener("click", copiarMETAR);
 
+    // Configurar el icono sol/luna con persistencia
     const toggle = document.getElementById("toggleMode");
     const savedMode = localStorage.getItem("theme");
     if (savedMode === "dark") {
@@ -215,11 +202,13 @@
         localStorage.setItem("theme", "light");
       }
     });
-
     document.getElementById("year").textContent = new Date().getFullYear();
+
   </script>
 </body>
 </html>
+
+
 
 
 
