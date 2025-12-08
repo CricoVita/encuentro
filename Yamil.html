@@ -64,7 +64,7 @@
   <div class="panel" id="panel"></div>
 
   <footer>
-    © &copy; <?php echo date("Y"); ?> 2026 Yamil Quiroz — Panel con datos oficiales de NAABOL
+    © <span id="year"></span> Yamil Quiroz — Panel con datos oficiales de NAABOL
   </footer>
 
   <script>
@@ -202,11 +202,14 @@
         localStorage.setItem("theme", "light");
       }
     });
+    document.getElementById("year").textContent = new Date().getFullYear();
+
   </script>
 </body>
 </html>
 
                                                 
+
 
 
 
