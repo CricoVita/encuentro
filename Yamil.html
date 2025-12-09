@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Panel MET Bolivia – CheckWX</title>
+  <title>Panel MET Bolivia – NAABOL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="favicon.png">
 
@@ -39,6 +39,7 @@
     .boton-copiar { display:block; margin:10px auto; padding:8px 15px; background:#2e8b57; color:#fff; border:none; border-radius:5px; cursor:pointer; }
     .boton-copiar:hover { background:#3cb371; }
 
+    /* Icono sol/luna */
     #toggleMode {
       font-size: 1.6em;
       cursor: pointer;
@@ -48,6 +49,7 @@
     }
     #toggleMode:hover { transform: scale(1.2); }
 
+    /* Modo oscuro */
     body.dark-mode { background: #1e1e1e; color: #ddd; }
     body.dark-mode h2 { color: #eee; }
     body.dark-mode .card { color: #fff; box-shadow: 0 2px 8px rgba(255,255,255,0.1); }
@@ -56,18 +58,16 @@
   </style>
 </head>
 <body>
-  <h2>Información Meteorológica Aeronáutica – Bolivia (CheckWX)</h2>
+  <h2>Información Meteorológica Aeronáutica – Bolivia (NAABOL)</h2>
   <span id="toggleMode">☀️</span>
   <button class="boton-copiar">📋 Copiar METAR</button>
   <div class="panel" id="panel"></div>
 
   <footer>
-    © <span id="year"></span> Yamil Quiroz — Panel con datos CheckWX
+    © <span id="year"></span> Yamil Quiroz — Panel con datos oficiales de NAABOL
   </footer>
 
   <script>
-    const API_KEY = "5132ad8916ef4ae9abd96e43b056e6f2";
-
     const aeropuertos = {
       "SLLP": "El Alto - La Paz",
       "SLCB": "Cochabamba",
@@ -78,7 +78,7 @@
       "SLRI": "Riberalta"
     };
 
-    const intervalo = 600000;
+    const intervalo = 600000; 
     let proximaActualizacion = Date.now() + intervalo;
 
     function obtenerIcono(metar) {
@@ -106,42 +106,45 @@
       const panel = document.getElementById("panel");
       panel.innerHTML = "";
 
-      for (let icao in aeropuertos) {
-        try {
-          const resp = await fetch(`https://api.checkwx.com/metar/${icao}`, {
-            headers: { "X-API-Key": API_KEY }
-          });
+      try {
+        const resp = await fetch("https://corsproxy.io/?http://sare.naabol.gob.bo/ifis-appv3/public/sabo?&cachebuster=12345");
+        const html = await resp.text();
 
-          const data = await resp.json();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const texto = doc.body.textContent;
 
-          let metar = "No disponible";
-          let speci = "";
+        for (let icao in aeropuertos) {
+          const reMetar = new RegExp(`-?METAR ${icao}[\\s\\S]*?(?=-?(METAR|SPECI)|$)`, "i");
+          const reSpe   = new RegExp(`-?SPECI ${icao}[\\s\\S]*?(?=-?(METAR|SPECI)|$)`, "i");
 
-          if (data && data.data && data.data.length > 0) {
-            metar = data.data.find(x => x.startsWith("METAR")) || "No disponible";
-            speci = data.data.find(x => x.startsWith("SPECI")) || "";
-          }
+          const mMetar = texto.match(reMetar);
+          const mSpe   = texto.match(reSpe);
 
-          const textoFinal = speci ? `${metar}\n${speci}` : metar;
+          let data = "";
+          if (mMetar) data += mMetar[0].replace(/[\x00-\x1F\x7F]/g,"").trim();
+          if (mSpe)   data += "\n" + mSpe[0].replace(/[\x00-\x1F\x7F]/g,"").trim();
+          if (!data)  data = "No disponible";
 
-          const {icono, clase, anim} = obtenerIcono(textoFinal);
-          const extras = obtenerIconosExtras(textoFinal);
+          data = data.replace(/SABO.*$/i, "").trim();
+
+          const {icono, clase, anim} = obtenerIcono(data);
+          const extras = obtenerIconosExtras(data);
           const hora = new Date().toLocaleTimeString();
 
           const card = document.createElement("div");
           card.className = `card ${clase}`;
-          card.innerHTML = `
+                   card.innerHTML = `
             <h3><span class="icono ${anim}">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
-            <pre>${textoFinal}</pre>
+            <pre>${data}</pre>
             <div class="extras">Fenómenos detectados: ${extras}</div>
             <div class="hora">Última actualización: ${hora}</div>
             <div class="contador" id="contador-${icao}"></div>
           `;
           panel.appendChild(card);
-
-        } catch (e) {
-          console.error("Error con", icao, e);
         }
+      } catch (e) {
+        console.error("Error al obtener datos de NAABOL:", e);
       }
 
       proximaActualizacion = Date.now() + intervalo;
@@ -166,15 +169,20 @@
       });
       navigator.clipboard.writeText(texto).then(() => {
         alert("✅ METAR/SPECI copiados al portapapeles");
+      }).catch(err => {
+        console.error("Error al copiar:", err);
       });
     }
 
+    // Inicializar carga y actualizaciones
     cargarMETAR();
     setInterval(cargarMETAR, intervalo);
     setInterval(actualizarContadores, 1000);
 
+    // Configurar el botón copiar
     document.querySelector(".boton-copiar").addEventListener("click", copiarMETAR);
 
+    // Configurar el icono sol/luna con persistencia
     const toggle = document.getElementById("toggleMode");
     const savedMode = localStorage.getItem("theme");
     if (savedMode === "dark") {
@@ -194,11 +202,13 @@
         localStorage.setItem("theme", "light");
       }
     });
-
     document.getElementById("year").textContent = new Date().getFullYear();
+
   </script>
 </body>
 </html>
+
+
 
 
 
