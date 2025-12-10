@@ -39,7 +39,6 @@
     .boton-copiar { display:block; margin:10px auto; padding:8px 15px; background:#2e8b57; color:#fff; border:none; border-radius:5px; cursor:pointer; }
     .boton-copiar:hover { background:#3cb371; }
 
-    /* Icono sol/luna */
     #toggleMode {
       font-size: 1.6em;
       cursor: pointer;
@@ -49,12 +48,17 @@
     }
     #toggleMode:hover { transform: scale(1.2); }
 
-    /* Modo oscuro */
     body.dark-mode { background: #1e1e1e; color: #ddd; }
     body.dark-mode h2 { color: #eee; }
     body.dark-mode .card { color: #fff; box-shadow: 0 2px 8px rgba(255,255,255,0.1); }
     body.dark-mode pre { background: rgba(255,255,255,0.1); }
     body.dark-mode footer { color: #aaa; }
+
+    .error {
+      background: #b22222 !important;
+      color: #fff;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -78,10 +82,10 @@
       "SLRI": "Riberalta"
     };
 
-    const intervalo = 600000; 
-    let proximaActualizacion = Date.now() + intervalo;
+    let proximaActualizacion = 0;
 
     function obtenerIcono(metar) {
+      if (!metar || metar === "No disponible") return { icono: "⚠️", clase: "niebla", anim: "blink" };
       if (metar.includes("TS")) return {icono: "🌩️", clase: "tormenta", anim: "bounce blink"};
       if (metar.includes("RA")) return {icono: "🌧️", clase: "lluvia", anim: "fall"};
       if (metar.includes("FG")) return {icono: "🌫️", clase: "niebla", anim: "fade"};
@@ -92,6 +96,7 @@
     }
 
     function obtenerIconosExtras(metar) {
+      if (!metar || metar === "No disponible") return "⚠️ Sin datos recientes del servidor NAABOL";
       let extras = "";
       if (metar.includes("TS")) extras += "🌩️ Tormenta ";
       if (metar.includes("RA")) extras += "🌧️ Lluvia ";
@@ -106,48 +111,73 @@
       const panel = document.getElementById("panel");
       panel.innerHTML = "";
 
+      let texto = "";
       try {
-        const resp = await fetch("https://corsproxy.io/?http://sare.naabol.gob.bo/ifis-appv3/public/sabo?&cachebuster=12345" + Date.now());
+        const baseUrl = "http://sare.naabol.gob.bo/ifis-appv3/public/sabo?cachebuster=" + Date.now();
+        const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(baseUrl);
+        const resp = await fetch(proxyUrl);
         const html = await resp.text();
 
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
-        const texto = doc.body.textContent;
+        texto = doc.body.textContent || "";
 
-        for (let icao in aeropuertos) {
-          const reMetar = new RegExp(`-?METAR ${icao}[\\s\\S]*?(?=-?(METAR|SPECI)|$)`, "i");
-          const reSpe   = new RegExp(`-?SPECI ${icao}[\\s\\S]*?(?=-?(METAR|SPECI)|$)`, "i");
-
-          const mMetar = texto.match(reMetar);
-          const mSpe   = texto.match(reSpe);
-
-          let data = "";
-          if (mMetar) data += mMetar[0].replace(/[\x00-\x1F\x7F]/g,"").trim();
-          if (mSpe)   data += "\n" + mSpe[0].replace(/[\x00-\x1F\x7F]/g,"").trim();
-          if (!data)  data = "No disponible";
-
-          data = data.replace(/SABO.*$/i, "").trim();
-
-          const {icono, clase, anim} = obtenerIcono(data);
-          const extras = obtenerIconosExtras(data);
-          const hora = new Date().toLocaleTimeString();
-
-          const card = document.createElement("div");
-          card.className = `card ${clase}`;
-                   card.innerHTML = `
-            <h3><span class="icono ${anim}">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
-            <pre>${data}</pre>
-            <div class="extras">Fenómenos detectados: ${extras}</div>
-            <div class="hora">Última actualización: ${hora}</div>
-            <div class="contador" id="contador-${icao}"></div>
-          `;
-          panel.appendChild(card);
-        }
       } catch (e) {
-        console.error("Error al obtener datos de NAABOL:", e);
+        console.error("Error al obtener datos:", e);
       }
 
-      proximaActualizacion = Date.now() + intervalo;
+      for (let icao in aeropuertos) {
+        let data = "No disponible";
+
+        if (texto) {
+          const reMetar = new RegExp(`METAR\\s+${icao}[\\s\\S]*?(?=METAR|SPECI|$)`, "i");
+          const reSpe   = new RegExp(`SPECI\\s+${icao}[\\s\\S]*?(?=METAR|SPECI|$)`, "i");
+
+          const m1 = texto.match(reMetar);
+          const m2 = texto.match(reSpe);
+
+          if (m1 || m2) {
+            data = ((m1 ? m1[0] : "") + "\n" + (m2 ? m2[0] : ""))
+              .replace(/[\x00-\x1F\x7F]/g,"")
+              .replace(/SABO.*$/i, "")
+              .trim();
+          }
+        }
+
+        const {icono, clase, anim} = obtenerIcono(data);
+        const extras = obtenerIconosExtras(data);
+        const hora = new Date().toLocaleTimeString();
+
+        const card = document.createElement("div");
+        card.className = `card ${clase}`;
+        card.innerHTML = `
+          <h3><span class="icono ${anim}">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
+          <pre>${data}</pre>
+          <div class="extras">Fenómenos detectados: ${extras}</div>
+          <div class="hora">Última actualización local: ${hora}</div>
+          <div class="contador" id="contador-${icao}"></div>
+        `;
+        panel.appendChild(card);
+      }
+    }
+
+    function programarActualizacionExacta() {
+      const ahora = new Date();
+      const proxima = new Date();
+
+      proxima.setHours(ahora.getHours() + (ahora.getMinutes() >= 58 ? 1 : 0));
+      proxima.setMinutes(58);
+      proxima.setSeconds(0);
+      proxima.setMilliseconds(0);
+
+      proximaActualizacion = proxima.getTime();
+
+      const msRestantes = proxima - ahora;
+
+      setTimeout(() => {
+        cargarMETAR();
+        programarActualizacionExacta();
+      }, msRestantes);
     }
 
     function actualizarContadores() {
@@ -165,48 +195,37 @@
     function copiarMETAR() {
       let texto = "";
       document.querySelectorAll(".card pre").forEach(pre => {
-        texto += pre.textContent.trim() + "\n\n";
+        const contenido = pre.textContent.trim();
+        if (contenido && contenido !== "No disponible") texto += contenido + "\n\n";
       });
-      navigator.clipboard.writeText(texto).then(() => {
-        alert("✅ METAR/SPECI copiados al portapapeles");
-      }).catch(err => {
-        console.error("Error al copiar:", err);
-      });
+      navigator.clipboard.writeText(texto);
+      alert("✅ METAR/SPECI copiados");
     }
 
-    // Inicializar carga y actualizaciones
     cargarMETAR();
-    setInterval(cargarMETAR, intervalo);
+    programarActualizacionExacta();
     setInterval(actualizarContadores, 1000);
 
-    // Configurar el botón copiar
     document.querySelector(".boton-copiar").addEventListener("click", copiarMETAR);
 
-    // Configurar el icono sol/luna con persistencia
     const toggle = document.getElementById("toggleMode");
     const savedMode = localStorage.getItem("theme");
     if (savedMode === "dark") {
       document.body.classList.add("dark-mode");
       toggle.textContent = "🌙";
-    } else {
-      toggle.textContent = "☀️";
     }
 
     toggle.addEventListener("click", () => {
       document.body.classList.toggle("dark-mode");
-      if (document.body.classList.contains("dark-mode")) {
-        toggle.textContent = "🌙";
-        localStorage.setItem("theme", "dark");
-      } else {
-        toggle.textContent = "☀️";
-        localStorage.setItem("theme", "light");
-      }
+      toggle.textContent = document.body.classList.contains("dark-mode") ? "🌙" : "☀️";
+      localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
     });
-    document.getElementById("year").textContent = new Date().getFullYear();
 
+    document.getElementById("year").textContent = new Date().getFullYear();
   </script>
 </body>
 </html>
+
 
 
 
