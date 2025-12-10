@@ -107,7 +107,7 @@
       panel.innerHTML = "";
 
       try {
-        const resp = await fetch("https://corsproxy.io/?https://sare.naabol.gob.bo/ifis-appv3/public/sabo?&cachebuster=" + Date.now());
+        const resp = await fetch("https://corsproxy.io/?http://sare.naabol.gob.bo/ifis-appv3/public/sabo?page=1&cachebuster=12345" + Date.now());
         const html = await resp.text();
 
         const parser = new DOMParser();
