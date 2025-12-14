@@ -106,44 +106,38 @@
     Hecho con ❤️ por la familia — <span id="fecha"></span>
   </footer>
 
-  <!-- MODAL -->
+  <!-- MODAL (CORREGIDO Y OPTIMIZADO) -->
   <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-text">
-    <button class="modal-close" aria-label="Cerrar">×</button>
     <div class="modal-contenido">
+
+      <!-- Botón de cerrar dentro del modal -->
+      <button class="modal-close" aria-label="Cerrar">×</button>
+
+      <!-- Imagen -->
       <img class="modal-content" id="modal-img" alt="">
+
+      <!-- Texto -->
       <p id="modal-text"></p>
+
+      <!-- Navegación -->
       <div class="modal-nav">
         <button onclick="navegar(-1)" aria-label="Imagen anterior">←</button>
         <button onclick="navegar(1)" aria-label="Imagen siguiente">→</button>
       </div>
+
     </div>
   </div>
 
   <!-- SCRIPTS -->
   <script>
-    // Footer dinámico
     document.getElementById("fecha").textContent = new Date().getFullYear();
 
-    // Modo oscuro
     function toggleDarkMode() {
       document.body.classList.toggle("dark-mode");
     }
   </script>
+
   <script src="modal.js"></script>
+
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
