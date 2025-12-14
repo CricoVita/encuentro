@@ -1,16 +1,45 @@
+/* =========================================================
+   VARIABLES
+========================================================= */
+:root {
+  --color-primary: #6C63FF;
+  --color-primary-dark: #5148cc;
+  --color-bg: #f8f9fa;
+  --color-text: #333;
+  --color-white: #fff;
+
+  --radius: 10px;
+  --transition: 0.25s ease;
+}
+
+/* MODO OSCURO */
+body.dark-mode {
+  --color-bg: #1e1e1e;
+  --color-text: #ddd;
+  --color-primary: #444;
+  --color-primary-dark: #333;
+}
+
+/* =========================================================
+   BASE
+========================================================= */
 body {
   margin: 0;
   font-family: 'Segoe UI', Arial, sans-serif;
-  background-color: #f8f9fa;
-  color: #333;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  transition: background-color var(--transition), color var(--transition);
 }
 
-/* ===== HEADER ===== */
+/* =========================================================
+   HEADER
+========================================================= */
 header {
-  background-color: #6C63FF;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   padding: 20px;
   text-align: center;
+  transition: background-color var(--transition);
 }
 
 nav {
@@ -21,20 +50,23 @@ nav {
 }
 
 .boton {
-  background-color: #6C63FF;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   border: none;
   padding: 10px 16px;
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background-color var(--transition), transform 0.15s ease;
 }
 
 .boton:hover {
-  background-color: #5148cc;
+  background-color: var(--color-primary-dark);
+  transform: translateY(-2px);
 }
 
-/* ===== SECCIONES ===== */
+/* =========================================================
+   SECCIONES
+========================================================= */
 section {
   padding: 30px 20px;
 }
@@ -44,7 +76,9 @@ h2 {
   margin-bottom: 20px;
 }
 
-/* ===== GALER�A UNIFORME ===== */
+/* =========================================================
+   GALERÍA
+========================================================= */
 .galeria-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -56,9 +90,10 @@ h2 {
   width: 100%;
   height: 180px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: var(--radius);
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform var(--transition), box-shadow var(--transition);
+  will-change: transform;
 }
 
 .galeria-grid img:hover {
@@ -66,23 +101,37 @@ h2 {
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
+/* =========================================================
+   MODAL
+========================================================= */
 /* ===== MODAL ===== */
 .modal {
-  display: none;               /* SOLO ESTE */
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.9);
-  justify-content: center;
-  align-items: center;
+  backdrop-filter: blur(4px);
+  display: flex;                 /* 🔥 Necesario para centrar */
+  justify-content: center;       /* 🔥 Centra horizontal */
+  align-items: center;           /* 🔥 Centra vertical */
   z-index: 1000;
+
+  opacity: 0;                    /* 🔥 Para animación */
+  pointer-events: none;          /* 🔥 Evita clics cuando está oculto */
+  transition: opacity 0.25s ease;
 }
 
+.modal.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
 
 .modal-contenido {
   position: relative;
-  text-align: center;
   max-width: 800px;
   width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .modal-content {
@@ -130,28 +179,57 @@ h2 {
   background: rgba(255,255,255,0.4);
 }
 
-/* ===== MODO OSCURO ===== */
-body.dark-mode {
-  background-color: #1e1e1e;
-  color: #ddd;
+/* ===== TEXTO DEL MODAL ===== */
+#modal-text {
+  margin-top: 15px;
+  font-size: 1.2rem;
+  color: var(--color-white);
+  text-align: center;
+  line-height: 1.4;
+  max-width: 90%;
+  opacity: 0.9;
+  font-weight: 500;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.6);
 }
 
-body.dark-mode header {
-  background-color: #333;
+/* Modo oscuro (si querés un toque más suave) */
+body.dark-mode #modal-text {
+  color: #eee;
+  opacity: 0.95;
 }
 
-body.dark-mode .boton {
-  background-color: #444;
-}
 
-body.dark-mode .modal {
-  background: rgba(0,0,0,0.95);
-}
-
-/* ===== FOOTER ===== */
+/* =========================================================
+   FOOTER
+========================================================= */
 footer {
   text-align: center;
   padding: 20px;
-  background: #6C63FF;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-white);
+  transition: background-color var(--transition);
+}
+
+/* CONTENEDOR DE VIDEOS */
+.contenedor {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* ITEM DE VIDEO */
+.item {
+  max-width: 600px;   /* 🔥 Tamaño ideal */
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* VIDEO RESPONSIVE */
+.item video {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
