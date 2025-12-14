@@ -1,17 +1,19 @@
-﻿let imagenes = [];
+let imagenes = [];
 let indiceActual = 0;
 
 function abrirModalDesdeGaleria(index) {
   indiceActual = index;
   const img = imagenes[indiceActual];
-  mostrarImagen(img.src, img.dataset.texto);
+  mostrarImagen(img.src, img.dataset.texto || "");
 }
 
 function mostrarImagen(src, texto) {
   const modalImg = document.getElementById("modal-img");
   const modalText = document.getElementById("modal-text");
+
   modalImg.src = src;
   modalText.textContent = texto;
+
   document.getElementById("modal").style.display = "block";
 }
 
@@ -22,7 +24,7 @@ function cerrarModal() {
 function navegar(direccion) {
   indiceActual = (indiceActual + direccion + imagenes.length) % imagenes.length;
   const img = imagenes[indiceActual];
-  mostrarImagen(img.src, img.dataset.texto);
+  mostrarImagen(img.src, img.dataset.texto || "");
 }
 
 function toggleDarkMode() {
@@ -31,6 +33,7 @@ function toggleDarkMode() {
 
 document.addEventListener("DOMContentLoaded", function () {
   imagenes = Array.from(document.querySelectorAll("#galeria img"));
+
   imagenes.forEach((img, index) => {
     img.addEventListener("click", () => abrirModalDesdeGaleria(index));
   });
@@ -40,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const modalContenido = document.querySelector(".modal-contenido");
 
   if (cerrarBtn) {
-    cerrarBtn.addEventListener("click", function (e) {
+    cerrarBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       cerrarModal();
     });
@@ -51,10 +54,17 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   if (modalContenido) {
-    modalContenido.addEventListener("click", function (e) {
-      e.stopPropagation();
-    });
+    modalContenido.addEventListener("click", (e) => e.stopPropagation());
   }
+
+  // Navegación con teclado
+  document.addEventListener("keydown", (e) => {
+    if (modal.style.display === "block") {
+      if (e.key === "Escape") cerrarModal();
+      if (e.key === "ArrowRight") navegar(1);
+      if (e.key === "ArrowLeft") navegar(-1);
+    }
+  });
 
   const fecha = document.getElementById("fecha");
   if (fecha) {
