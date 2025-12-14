@@ -8,116 +8,130 @@
 </head>
 <body>
 
+  <!-- HEADER -->
   <header>
     <h1>Galería</h1>
     <nav>
-      <a href="#fotos" class="boton">📸 Fotos</a>
-      <a href="#videos" class="boton">🎥 Videos</a>
-      <a href="#noticias" class="boton">📰 Noticias</a>
-      <button class="boton" onclick="toggleDarkMode()">🌙 Modo oscuro</button>
+      <ul style="list-style:none; padding:0; margin:0; display:flex; flex-wrap:wrap; justify-content:center; gap:10px;">
+        <li><a href="#fotos" class="boton">📸 Fotos</a></li>
+        <li><a href="#videos" class="boton">🎥 Videos</a></li>
+        <li><a href="#noticias" class="boton">📰 Noticias</a></li>
+        <li><button class="boton" onclick="toggleDarkMode()">🌙 Modo oscuro</button></li>
+      </ul>
     </nav>
   </header>
 
-  <section id="fotos">
-    <h2>📸 Fotos</h2>
-    <div class="contenedor" id="galeria">
-      <div class="item">
-        <img src="Fotos/gatito.jpeg" alt="Foto 1" data-texto="Stuart, Chuki, Chewbacca">
-        <p>No saben que nombre ponerle</p>
+  <!-- SECCIÓN FOTOS -->
+  <main>
+    <section id="fotos">
+      <h2>📸 Fotos</h2>
+      <div class="contenedor" id="galeria">
+        <div class="item">
+          <img src="Fotos/gatito.jpeg" alt="Tres gatitos jugando" data-texto="Stuart, Chuki, Chewbacca">
+          <p>No saben qué nombre ponerle</p>
+        </div>
+        <div class="item">
+          <img src="Fotos/milli.jpg" alt="Retrato de Mili" data-texto="MILI (muluchaquis)">
+          <p>Mili</p>
+        </div>
+        <div class="item">
+          <img src="Fotos/pro.jpg" alt="Imagen humorística de programador" data-texto="Programador">
+          <p>Humor</p>
+        </div>
+        <div class="item">
+          <img src="Fotos/acto1.jpeg" alt="Licenciada Karina Velasquez en acto" data-texto="Licenciada Karina Velasquez">
+          <p>Licenciada Karina Velasquez</p>
+        </div>
+        <div class="item">
+          <img src="Fotos/ave maria.jpeg" alt="Danza Tobas Colegio Ave Maria" data-texto="Recuerdo de Col. Ave Maria">
+          <p>Recuerdo Danza Tobas Colegio Ave Maria con las Gemelas</p>
+        </div>
+        <div class="item">
+          <img src="Fotos/escuadronI.jpeg" alt="Recuerdo Cuartel 2002" data-texto="Recuerdo Cuartel">
+          <p>Recuerdo año 2002 Cuartel</p>
+        </div>
+        <div class="item">
+          <img src="Fotos/mejores escuadron.jpeg" alt="Escuadrón destacado" data-texto="Recuerdo Cuartel">
+          <p>Los Mejores de Cada Sección, los más destacados</p>
+        </div>
       </div>
-      <div class="item">
-        <img src="Fotos/milli.jpg" alt="Foto 2" data-texto="MILI (muluchaquis)">
-        <p>Mili</p>
-      </div>
-      <div class="item">
-        <img src="Fotos/pro.jpg" alt="Foto 3" data-texto="Programador">
-        <p>Humor</p>
-      </div>
-      <div class="item">
-        <img src="Fotos/acto1.jpeg" alt="Foto 4" data-texto="Licenciada Karina Velasquez">
-        <p>Licenciada Karina Velasquez</p>
-      </div>
-      <div class="item">
-        <img src="Fotos/ave maria.jpeg" alt="Foto 5" data-texto="Recuerdo de Col. Ave Maria">
-        <p>Recuerdo Danza Tobas Colegio Ave Maria con las Gemelas</p>
-      </div>
-      <div class="item">
-        <img src="Fotos/escuadronI.jpeg" alt="Foto 6" data-texto="Recuedo Cuartel">
-        <p>Recuerdo año 2002 Cuartel</p>
-      </div>
-       <div class="item">
-        <img src="Fotos/mejores escuadron.jpeg" alt="Foto 6" data-texto="Recuedo Cuartel">
-        <p>Los Mejores de Cada Seccion Los mas destacados</p>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="videos">
-    <h2>🎥 Videos</h2>
-    <div class="contenedor">
-      <div class="item">
-        <video controls playsinline width="100%" height="auto">
-          <source src="videos/video1.mp4" type="video/mp4">
-          Tu navegador no soporta video.
-        </video>
-        <p>Te extraño Mamá</p>
+    <!-- SECCIÓN VIDEOS -->
+    <section id="videos">
+      <h2>🎥 Videos</h2>
+      <div class="contenedor">
+        <div class="item">
+          <video controls playsinline width="100%" height="auto">
+            <source src="videos/video1.mp4" type="video/mp4">
+            Tu navegador no soporta video.
+          </video>
+          <p>Te extraño Mamá</p>
+        </div>
+        <div class="item">
+          <video controls muted playsinline width="100%" height="auto">
+            <source src="videos/video2.webm" type="video/webm">
+            Tu navegador no soporta video.
+          </video>
+          <p>LOL</p>
+        </div>
+        <div class="item">
+          <video controls muted playsinline width="100%" height="auto">
+            <source src="videos/video3.mp4" type="video/mp4">
+            Tu navegador no soporta video.
+          </video>
+          <p>Cuidado con la viborita</p>
+        </div>
       </div>
-      <div class="item">
-        <video controls muted playsinline width="100%" height="auto">
-          <source src="videos/video2.webm" type="video/webm">
-          Tu navegador no soporta video.
-        </video>
-        <p>LOL</p>
-      </div>
-      <div class="item">
-        <video controls muted playsinline width="100%" height="auto">
-          <source src="videos/video3.mp4" type="video/mp4">
-          Tu navegador no soporta video.
-        </video>
-        <p>Cuidado con la viborita</p>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="noticias">
-    <h2>📰 Noticias</h2>
-    <div class="contenedor">
-      <div class="item noticia">
-        <h3>¡Yamil Quiroz!</h3>
-        <a href="Yamil.html" class="boton">Datos de Yamil</a>
+    <!-- SECCIÓN NOTICIAS -->
+    <section id="noticias">
+      <h2>📰 Noticias</h2>
+      <div class="contenedor">
+        <div class="item noticia">
+          <h3>¡Yamil Quiroz!</h3>
+          <a href="Yamil.html" class="boton">Datos de Yamil</a>
+        </div>
+        <div class="item noticia">
+          <h3>Se acerca 3I/ATLAS</h3>
+          <p>Si ven que se acerca ya debería llegar. ¡No creen!</p>
+        </div>
       </div>
-      <div class="item noticia">
-        <h3>Se acerca 3I/ATLAS</h3>
-        <p>Si ven que se acerca ya debería llegar. ¡No creen!</p>
-      </div>
-    </div>
-  </section>
+    </section>
+  </main>
 
+  <!-- FOOTER -->
   <footer>
     Hecho con ❤️ por la familia — <span id="fecha"></span>
   </footer>
 
-  <!-- Modal -->
-  <div id="modal" class="modal">
-    <span class="modal-close">×</span>
+  <!-- MODAL -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-text">
+    <button class="modal-close" aria-label="Cerrar">×</button>
     <div class="modal-contenido">
-      <img class="modal-content" id="modal-img">
+      <img class="modal-content" id="modal-img" alt="">
       <p id="modal-text"></p>
       <div class="modal-nav">
-        <button onclick="navegar(-1)">←</button>
-        <button onclick="navegar(1)">→</button>
+        <button onclick="navegar(-1)" aria-label="Imagen anterior">←</button>
+        <button onclick="navegar(1)" aria-label="Imagen siguiente">→</button>
       </div>
     </div>
   </div>
 
+  <!-- SCRIPTS -->
+  <script>
+    // Footer dinámico
+    document.getElementById("fecha").textContent = new Date().getFullYear();
+
+    // Modo oscuro
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark-mode");
+    }
+  </script>
   <script src="modal.js"></script>
 </body>
 </html>
-
-
-
-
-
 
 
 
