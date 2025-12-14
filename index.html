@@ -14,7 +14,7 @@
     <nav>
       <ul style="list-style:none; padding:0; margin:0; display:flex; flex-wrap:wrap; justify-content:center; gap:10px;">
         <li><a href="#fotos" class="boton">📸 Fotos</a></li>
-        <li><a href="#videos" class="boton">🎥 Video</a></li>
+        <li><a href="#videos" class="boton">🎥 Videos</a></li>
         <li><a href="#noticias" class="boton">📰 Noticias</a></li>
         <li><button class="boton" onclick="toggleDarkMode()">🌙 Modo oscuro</button></li>
       </ul>
@@ -32,22 +32,24 @@
         <img src="Fotos/milli.jpg" alt="Mili" data-texto="MILI (muluchaquis)">
         <img src="Fotos/pro.jpg" alt="Programador" data-texto="Programador">
         <img src="Fotos/acto1.jpeg" alt="Licenciada Karina Velasquez" data-texto="Licenciada Karina Velasquez">
-        <img src="Fotos/ave maria.jpeg" alt="Danza Tobas" data-texto="Recuerdo de Col. Ave Maria">
+        <img src="Fotos/avemaria.jpeg" alt="Danza Tobas" data-texto="Recuerdo de Col. Ave Maria">
         <img src="Fotos/escuadronI.jpeg" alt="Cuartel 2002" data-texto="Recuerdo Cuartel">
-        <img src="Fotos/mejores escuadron.jpeg" alt="Escuadrón destacado" data-texto="Recuerdo Cuartel">
+        <img src="Fotos/mejoresescuadron.jpeg" alt="Escuadrón destacado" data-texto="Recuerdo Cuartel">
       </div>
     </section>
 
-    <!-- SECCIÓN VIDEO ÚNICO -->
+    <!-- SECCIÓN VIDEOS -->
     <section id="videos">
-      <h2>🎥 Video</h2>
-      <div class="video-center">
-        <video controls playsinline>
-          <source src="videos/video1.mp4" type="video/mp4">
-          Tu navegador no soporta video.
-        </video>
-        <p>Te extraño Mamá</p>
-      </div>
+      <h2>🎥 Videos</h2>
+      <div class="contenedor">
+        <div class="item">
+          <video controls playsinline width="100%" height="auto">
+            <source src="videos/video1.mp4" type="video/mp4">
+            Tu navegador no soporta video.
+          </video>
+          <p>Te extraño Mamá</p>
+        </div>
+        
     </section>
 
     <!-- SECCIÓN NOTICIAS -->
