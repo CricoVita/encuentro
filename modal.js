@@ -27,10 +27,6 @@ function navegar(direccion) {
   mostrarImagen(img.src, img.dataset.texto || "");
 }
 
-function toggleDarkMode() {
-  document.body.classList.toggle("dark-mode");
-}
-
 document.addEventListener("DOMContentLoaded", function () {
   imagenes = Array.from(document.querySelectorAll("#galeria img"));
 
@@ -42,20 +38,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const cerrarBtn = document.querySelector(".modal-close");
   const modalContenido = document.querySelector(".modal-contenido");
 
-  if (cerrarBtn) {
-    cerrarBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      cerrarModal();
-    });
-  }
+  cerrarBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    cerrarModal();
+  });
 
-  if (modal) {
-    modal.addEventListener("click", cerrarModal);
-  }
+  modal.addEventListener("click", cerrarModal);
 
-  if (modalContenido) {
-    modalContenido.addEventListener("click", (e) => e.stopPropagation());
-  }
+  modalContenido.addEventListener("click", (e) => e.stopPropagation());
 
   // Navegación con teclado
   document.addEventListener("keydown", (e) => {
@@ -65,9 +55,4 @@ document.addEventListener("DOMContentLoaded", function () {
       if (e.key === "ArrowLeft") navegar(-1);
     }
   });
-
-  const fecha = document.getElementById("fecha");
-  if (fecha) {
-    fecha.textContent = new Date().toLocaleDateString("es-AR");
-  }
 });
