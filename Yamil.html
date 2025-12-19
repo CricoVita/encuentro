@@ -114,8 +114,8 @@
 
       let texto = "";
       try {
-        const baseUrl = "https://sare.naabol.gob.bo/ifis-appv3/public/sabo?cachebuster=" + Date.now();
-        const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(baseUrl);
+        const baseUrl = "http://sare.naabol.gob.bo/ifis-appv3/public/sabo?cachebuster=" + Date.now();
+        const proxyUrl = "http://api.allorigins.win/raw?url=" + encodeURIComponent(baseUrl);
         const resp = await fetch(proxyUrl);
         const html = await resp.text();
 
@@ -237,4 +237,5 @@
   </script>
 </body>
 </html>
+
 
