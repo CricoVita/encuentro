@@ -26,7 +26,6 @@
     @keyframes bounce { 40% { transform: translateY(-8px); } 60% { transform: translateY(-4px); } }
     .blink { animation: blink 1.5s infinite; }
     @keyframes blink { 25%,75% { opacity: 0.3; } }
-    .bounce-blink { animation: bounce 2s infinite, blink 1.5s infinite; }
     .spin { animation: spin 4s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .fall { animation: fall 3s infinite linear; }
@@ -64,8 +63,8 @@
 </head>
 <body>
   <h2>Información Meteorológica Aeronáutica – Bolivia (NAABOL)</h2>
-  <button id="toggleMode" aria-label="Cambiar modo">☀️</button>
-  <button class="boton-copiar" aria-label="Copiar METAR">📋 Copiar METAR</button>
+  <span id="toggleMode">☀️</span>
+  <button class="boton-copiar">📋 Copiar METAR</button>
   <div class="panel" id="panel"></div>
 
   <footer>
@@ -87,7 +86,7 @@
 
     function obtenerIcono(metar) {
       if (!metar || metar === "No disponible") return { icono: "⚠️", clase: "niebla", anim: "blink" };
-      if (metar.includes("TS")) return {icono: "🌩️", clase: "tormenta", anim: "bounce-blink"};
+      if (metar.includes("TS")) return {icono: "🌩️", clase: "tormenta", anim: "bounce blink"};
       if (metar.includes("RA")) return {icono: "🌧️", clase: "lluvia", anim: "fall"};
       if (metar.includes("FG")) return {icono: "🌫️", clase: "niebla", anim: "fade"};
       if (metar.includes("SN")) return {icono: "❄️", clase: "niebla", anim: "fall"};
@@ -115,7 +114,7 @@
       let texto = "";
       try {
         const baseUrl = "http://sare.naabol.gob.bo/ifis-appv3/public/sabo?cachebuster=" + Date.now();
-        const proxyUrl = "http://api.allorigins.win/raw?url=" + encodeURIComponent(baseUrl);
+        const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(baseUrl);
         const resp = await fetch(proxyUrl);
         const html = await resp.text();
 
@@ -131,8 +130,8 @@
         let data = "No disponible";
 
         if (texto) {
-                    const reMetar = new RegExp(`METAR\\s+${icao}.{0,500}`, "i");
-          const reSpe   = new RegExp(`SPECI\\s+${icao}.{0,500}`, "i");
+          const reMetar = new RegExp(`METAR\\s+${icao}[\\s\\S]*?(?=METAR|SPECI|$)`, "i");
+          const reSpe   = new RegExp(`SPECI\\s+${icao}[\\s\\S]*?(?=METAR|SPECI|$)`, "i");
 
           const m1 = texto.match(reMetar);
           const m2 = texto.match(reSpe);
@@ -151,18 +150,13 @@
 
         const card = document.createElement("div");
         card.className = `card ${clase}`;
-        
-        // Usamos textContent para el bloque <pre> en lugar de innerHTML
-        const pre = document.createElement("pre");
-        pre.textContent = data;
-
         card.innerHTML = `
           <h3><span class="icono ${anim}">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
+          <pre>${data}</pre>
           <div class="extras">Fenómenos detectados: ${extras}</div>
           <div class="hora">Última actualización local: ${hora}</div>
           <div class="contador" id="contador-${icao}"></div>
         `;
-        card.insertBefore(pre, card.querySelector(".extras"));
         panel.appendChild(card);
       }
     }
@@ -171,8 +165,7 @@
       const ahora = new Date();
       const proxima = new Date();
 
-      // Ajuste: si ya pasó el minuto 58, programamos para la siguiente hora en el minuto 58
-      proxima.setHours(ahora.getMinutes() >= 58 ? ahora.getHours() + 1 : ahora.getHours());
+      proxima.setHours(ahora.getHours() + (ahora.getMinutes() >= 58 ? 1 : 0));
       proxima.setMinutes(58);
       proxima.setSeconds(0);
       proxima.setMilliseconds(0);
@@ -206,12 +199,7 @@
         if (contenido && contenido !== "No disponible") texto += contenido + "\n\n";
       });
       navigator.clipboard.writeText(texto);
-
-      // Feedback elegante: cambiamos texto del botón temporalmente
-      const boton = document.querySelector(".boton-copiar");
-      const original = boton.textContent;
-      boton.textContent = "✅ Copiado";
-      setTimeout(() => boton.textContent = original, 2000);
+      alert("✅ METAR/SPECI copiados");
     }
 
     cargarMETAR();
@@ -237,5 +225,3 @@
   </script>
 </body>
 </html>
-
-
