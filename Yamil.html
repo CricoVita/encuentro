@@ -26,6 +26,9 @@
     @keyframes bounce { 40% { transform: translateY(-8px); } 60% { transform: translateY(-4px); } }
     .blink { animation: blink 1.5s infinite; }
     @keyframes blink { 25%,75% { opacity: 0.3; } }
+    /* Animación combinada para tormenta */
+    .bounce-blink {
+     animation: bounce 2s infinite, blink 1.5s infinite;}
     .spin { animation: spin 4s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .fall { animation: fall 3s infinite linear; }
@@ -86,6 +89,7 @@
 
     function obtenerIcono(metar) {
       if (!metar || metar === "No disponible") return { icono: "⚠️", clase: "niebla", anim: "blink" };
+      
       if (metar.includes("TS")) return {icono: "🌩️", clase: "tormenta", anim: "bounce blink"};
       if (metar.includes("RA")) return {icono: "🌧️", clase: "lluvia", anim: "fall"};
       if (metar.includes("FG")) return {icono: "🌫️", clase: "niebla", anim: "fade"};
@@ -225,3 +229,4 @@
   </script>
 </body>
 </html>
+
