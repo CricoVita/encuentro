@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>Panel MET Bolivia – NAABOL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Asegúrate de tener este archivo en tu carpeta -->
+  <link rel="icon" type="image/png" href="favicon.png">
   <style>
     body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 10px; transition: background 0.5s, color 0.5s; }
     h2 { text-align: center; color: #333; margin: 15px 0; }
@@ -87,6 +89,24 @@
       return extras || "☁️ Sin fenómenos significativos";
     }
 
+    function decodificarNOTAM(texto) {
+      if (!texto || texto === "No disponible") return texto;
+      return texto
+        .replace(/\bRWY\b/g, "Pista")
+        .replace(/\bTWY\b/g, "Calle de rodaje")
+        .replace(/\bAPRON\b/g, "Plataforma")
+        .replace(/\bCLSD\b/g, "Cerrada")
+        .replace(/\bOPN\b/g, "Abierta")
+        .replace(/\bWIP\b/g, "Trabajos en progreso")
+        .replace(/\bAVBL\b/g, "Disponible")
+        .replace(/\bUNAVBL\b/g, "No disponible")
+        .replace(/\bLGT\b/g, "Luces")
+        .replace(/\bNAV\b/g, "Navegación")
+        .replace(/\bILS\b/g, "Sistema de aterrizaje instrumental")
+        .replace(/\bVOR\b/g, "Radiofaro omnidireccional")
+        .replace(/\bNDB\b/g, "Radiofaro no direccional");
+    }
+
     async function cargarNOTAM(icao) {
       try {
         const baseUrl = "http://sare.naabol.gob.bo/ifis-appv3/public/notam?cachebuster=" + Date.now();
@@ -99,7 +119,8 @@
         const notamFila = filas.find(f => f.textContent.includes(icao));
         if (notamFila) {
           const celdas = Array.from(notamFila.querySelectorAll("td")).map(td => td.textContent.trim());
-          return celdas.join(" | ");
+          const notamTexto = celdas.join(" | ");
+          return decodificarNOTAM(notamTexto); // aquí aplicamos la decodificación
         } else {
           return "No disponible";
         }
@@ -127,7 +148,7 @@
 
       for (let icao in aeropuertos) {
         let data = "No disponible";
-                if (texto) {
+        if (texto) {
           const reMetar = new RegExp(`METAR\\s+${icao}[\\s\\S]*?(?=METAR|SPECI|$)`, "i");
           const reSpe   = new RegExp(`SPECI\\s+${icao}[\\s\\S]*?(?=METAR|SPECI|$)`, "i");
           const m1 = texto.match(reMetar);
@@ -156,7 +177,6 @@
         `;
         panel.appendChild(card);
 
-        // Cargar NOTAM específico para este aeropuerto
         cargarNOTAM(icao).then(notamData => {
           document.getElementById(`notam-${icao}`).textContent = "📑 " + notamData;
         });
