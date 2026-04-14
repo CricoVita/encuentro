@@ -5,7 +5,6 @@
   <title>Panel MET Bolivia – NAABOL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="favicon.png">
-
   <style>
     body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 10px; margin: 0; transition: background 0.5s, color 0.5s; }
     h2 { text-align: center; color: #333; font-size: 1.4em; margin: 15px 0; }
@@ -13,55 +12,24 @@
     .card { border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 12px; color: #fff; transition: background 1s ease; }
     .card h3 { margin: 0 0 8px; font-size: 1.1em; display: flex; align-items: center; }
     pre { background: rgba(255,255,255,0.2); padding: 8px; border-radius: 5px; white-space: pre-wrap; color: #fff; font-size: 0.9em; overflow-x: auto; }
-    .hora, .contador, .extras { font-size: 0.8em; margin-top: 6px; }
+    .hora, .contador, .extras, .notam { font-size: 0.8em; margin-top: 6px; }
     .extras { color: #ffebcd; }
+    .notam { color: #ffffcc; background: rgba(0,0,0,0.2); padding: 6px; border-radius: 5px; }
     .icono { font-size: 1.5em; margin-right: 6px; display: inline-block; }
-
     .tormenta { background: linear-gradient(135deg, #8b0000, #b22222); }
     .lluvia { background: linear-gradient(135deg, #1e3c72, #2a5298); }
     .niebla { background: linear-gradient(135deg, #555, #888); }
     .normal { background: linear-gradient(135deg, #2e8b57, #3cb371); }
-
-    .bounce { animation: bounce 2s infinite; }
-    @keyframes bounce { 40% { transform: translateY(-8px); } 60% { transform: translateY(-4px); } }
-    .blink { animation: blink 1.5s infinite; }
-    @keyframes blink { 25%,75% { opacity: 0.3; } }
-    /* Animación combinada para tormenta */
-    .bounce-blink {
-     animation: bounce 2s infinite, blink 1.5s infinite;}
-    .spin { animation: spin 4s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .fall { animation: fall 3s infinite linear; }
-    @keyframes fall { 100% { transform: translateY(10px); opacity: 0.7; } }
-    .fade { animation: fade 4s infinite; }
-    @keyframes fade { 50% { opacity: 0.4; } }
-    .float { animation: float 5s ease-in-out infinite; }
-    @keyframes float { 50% { transform: translateY(-6px); } }
-
     footer { text-align: center; margin-top: 20px; font-size: 0.8em; color: #555; padding: 10px; }
     .boton-copiar { display:block; margin:10px auto; padding:8px 15px; background:#2e8b57; color:#fff; border:none; border-radius:5px; cursor:pointer; }
     .boton-copiar:hover { background:#3cb371; }
-
-    #toggleMode {
-      font-size: 1.6em;
-      cursor: pointer;
-      margin: 10px;
-      display: inline-block;
-      transition: transform 0.3s ease;
-    }
+    #toggleMode { font-size: 1.6em; cursor: pointer; margin: 10px; display: inline-block; transition: transform 0.3s ease; }
     #toggleMode:hover { transform: scale(1.2); }
-
     body.dark-mode { background: #1e1e1e; color: #ddd; }
     body.dark-mode h2 { color: #eee; }
     body.dark-mode .card { color: #fff; box-shadow: 0 2px 8px rgba(255,255,255,0.1); }
     body.dark-mode pre { background: rgba(255,255,255,0.1); }
     body.dark-mode footer { color: #aaa; }
-
-    .error {
-      background: #b22222 !important;
-      color: #fff;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
@@ -69,10 +37,7 @@
   <span id="toggleMode">☀️</span>
   <button class="boton-copiar">📋 Copiar METAR</button>
   <div class="panel" id="panel"></div>
-
-  <footer>
-    © <span id="year"></span> Yamil Quiroz — Panel con datos oficiales de NAABOL
-  </footer>
+  <footer>© <span id="year"></span> Yamil Quiroz — Panel con datos oficiales de NAABOL</footer>
 
   <script>
     const aeropuertos = {
@@ -89,7 +54,6 @@
 
     function obtenerIcono(metar) {
       if (!metar || metar === "No disponible") return { icono: "⚠️", clase: "niebla", anim: "blink" };
-      
       if (metar.includes("TS")) return {icono: "🌩️", clase: "tormenta", anim: "bounce blink"};
       if (metar.includes("RA")) return {icono: "🌧️", clase: "lluvia", anim: "fall"};
       if (metar.includes("FG")) return {icono: "🌫️", clase: "niebla", anim: "fade"};
@@ -111,35 +75,47 @@
       return extras || "☁️ Sin fenómenos significativos";
     }
 
+    async function cargarNOTAM(icao) {
+      try {
+        const baseUrl = "http://sare.naabol.gob.bo/ifis-appv3/public/sabo?cachebuster=" + Date.now();
+        const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(baseUrl);
+        const resp = await fetch(proxyUrl);
+        const html = await resp.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const texto = doc.body.textContent || "";
+        const reNotam = new RegExp(`NOTAM\\s+${icao}[\\s\\S]*?(?=NOTAM|METAR|SPECI|$)`, "i");
+        const match = texto.match(reNotam);
+        return match ? match[0].trim() : "No disponible";
+      } catch (e) {
+        console.error("Error al obtener NOTAM:", e);
+        return "Error al cargar NOTAM";
+      }
+    }
+
     async function cargarMETAR() {
       const panel = document.getElementById("panel");
       panel.innerHTML = "";
-
       let texto = "";
       try {
         const baseUrl = "http://sare.naabol.gob.bo/ifis-appv3/public/sabo?cachebuster=" + Date.now();
         const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(baseUrl);
         const resp = await fetch(proxyUrl);
         const html = await resp.text();
-
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
         texto = doc.body.textContent || "";
-
       } catch (e) {
         console.error("Error al obtener datos:", e);
       }
 
       for (let icao in aeropuertos) {
         let data = "No disponible";
-
         if (texto) {
           const reMetar = new RegExp(`METAR\\s+${icao}[\\s\\S]*?(?=METAR|SPECI|$)`, "i");
           const reSpe   = new RegExp(`SPECI\\s+${icao}[\\s\\S]*?(?=METAR|SPECI|$)`, "i");
-
           const m1 = texto.match(reMetar);
           const m2 = texto.match(reSpe);
-
           if (m1 || m2) {
             data = ((m1 ? m1[0] : "") + "\n" + (m2 ? m2[0] : ""))
               .replace(/[\x00-\x1F\x7F]/g,"")
@@ -160,24 +136,26 @@
           <div class="extras">Fenómenos detectados: ${extras}</div>
           <div class="hora">Última actualización local: ${hora}</div>
           <div class="contador" id="contador-${icao}"></div>
+          <div class="notam" id="notam-${icao}">📑 Cargando NOTAM...</div>
         `;
         panel.appendChild(card);
+
+        // Cargar NOTAM específico para este aeropuerto
+        cargarNOTAM(icao).then(notamData => {
+          document.getElementById(`notam-${icao}`).textContent = "📑 " + notamData;
+        });
       }
     }
 
     function programarActualizacionExacta() {
       const ahora = new Date();
       const proxima = new Date();
-
       proxima.setHours(ahora.getHours() + (ahora.getMinutes() >= 58 ? 1 : 0));
       proxima.setMinutes(58);
       proxima.setSeconds(0);
       proxima.setMilliseconds(0);
-
       proximaActualizacion = proxima.getTime();
-
       const msRestantes = proxima - ahora;
-
       setTimeout(() => {
         cargarMETAR();
         programarActualizacionExacta();
@@ -209,7 +187,6 @@
     cargarMETAR();
     programarActualizacionExacta();
     setInterval(actualizarContadores, 1000);
-
     document.querySelector(".boton-copiar").addEventListener("click", copiarMETAR);
 
     const toggle = document.getElementById("toggleMode");
@@ -218,15 +195,12 @@
       document.body.classList.add("dark-mode");
       toggle.textContent = "🌙";
     }
-
     toggle.addEventListener("click", () => {
       document.body.classList.toggle("dark-mode");
       toggle.textContent = document.body.classList.contains("dark-mode") ? "🌙" : "☀️";
       localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
     });
-
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
 </body>
 </html>
-
