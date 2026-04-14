@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Panel MET Bolivia – NAABOL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Asegúrate de tener este archivo en tu carpeta -->
   <link rel="icon" type="image/png" href="favicon.png">
   <style>
     body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 10px; transition: background 0.5s, color 0.5s; }
@@ -15,7 +14,7 @@
     pre { background: rgba(255,255,255,0.2); padding: 8px; border-radius: 5px; white-space: pre-wrap; color: #fff; font-size: 0.9em; }
     .hora, .contador, .extras, .notam { font-size: 0.8em; margin-top: 6px; }
     .extras { color: #ffebcd; }
-    .notam { color: #ffffcc; background: rgba(0,0,0,0.2); padding: 6px; border-radius: 5px; }
+    .notam { color: #ffffcc; background: rgba(0,0,0,0.2); padding: 6px; border-radius: 5px; white-space: pre-wrap; }
     .icono { font-size: 1.5em; margin-right: 6px; }
     .tormenta { background: linear-gradient(135deg, #8b0000, #b22222); }
     .lluvia { background: linear-gradient(135deg, #1e3c72, #2a5298); }
@@ -30,8 +29,6 @@
     body.dark-mode .card { color: #fff; }
     body.dark-mode pre { background: rgba(255,255,255,0.1); }
     body.dark-mode footer { color: #aaa; }
-
-    /* Animaciones */
     .blink { animation: blink 1s infinite; }
     .bounce { animation: bounce 1s infinite; }
     .spin { animation: spin 2s linear infinite; }
@@ -51,7 +48,7 @@
   <span id="toggleMode">☀️</span>
   <button class="boton-copiar">📋 Copiar METAR</button>
   <div class="panel" id="panel"></div>
-  <footer>© <span id="year"></span> Yamil Quiroz — Panel con datos oficiales de NAABOL</footer>
+  <footer>© <span id="year"></span> Panel con datos oficiales de NAABOL</footer>
 
   <script>
     const aeropuertos = {
@@ -116,11 +113,13 @@
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
         const filas = Array.from(doc.querySelectorAll("tr"));
-        const notamFila = filas.find(f => f.textContent.includes(icao));
-        if (notamFila) {
-          const celdas = Array.from(notamFila.querySelectorAll("td")).map(td => td.textContent.trim());
-          const notamTexto = celdas.join(" | ");
-          return decodificarNOTAM(notamTexto); // aquí aplicamos la decodificación
+        const notamFilas = filas.filter(f => f.textContent.includes(icao));
+        if (notamFilas.length > 0) {
+          let todos = notamFilas.map(fila => {
+            const celdas = Array.from(fila.querySelectorAll("td")).map(td => td.textContent.trim());
+            return decodificarNOTAM(celdas.join(" | "));
+          });
+          return todos.join("\n\n"); // muestra todos separados
         } else {
           return "No disponible";
         }
