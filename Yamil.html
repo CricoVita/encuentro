@@ -53,14 +53,14 @@
     let proximaActualizacion = 0;
 
     function obtenerIcono(metar) {
-      if (!metar || metar === "No disponible") return { icono: "⚠️", clase: "niebla", anim: "blink" };
-      if (metar.includes("TS")) return {icono: "🌩️", clase: "tormenta", anim: "bounce blink"};
-      if (metar.includes("RA")) return {icono: "🌧️", clase: "lluvia", anim: "fall"};
-      if (metar.includes("FG")) return {icono: "🌫️", clase: "niebla", anim: "fade"};
-      if (metar.includes("SN")) return {icono: "❄️", clase: "niebla", anim: "fall"};
-      if (metar.includes("WS")) return {icono: "🌪️", clase: "tormenta", anim: "spin"};
-      if (metar.includes("CAVOK")) return {icono: "☀️", clase: "normal", anim: "spin"};
-      return {icono: "☁️", clase: "normal", anim: "float"};
+      if (!metar || metar === "No disponible") return { icono: "⚠️", clase: "niebla" };
+      if (metar.includes("TS")) return {icono: "🌩️", clase: "tormenta"};
+      if (metar.includes("RA")) return {icono: "🌧️", clase: "lluvia"};
+      if (metar.includes("FG")) return {icono: "🌫️", clase: "niebla"};
+      if (metar.includes("SN")) return {icono: "❄️", clase: "niebla"};
+      if (metar.includes("WS")) return {icono: "🌪️", clase: "tormenta"};
+      if (metar.includes("CAVOK")) return {icono: "☀️", clase: "normal"};
+      return {icono: "☁️", clase: "normal"};
     }
 
     function obtenerIconosExtras(metar) {
@@ -83,10 +83,16 @@
         const html = await resp.text();
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
-        const texto = doc.body.textContent || "";
-        const reNotam = new RegExp(`NOTAM\\s+${icao}[\\s\\S]*?(?=NOTAM|$)`, "i");
-        const match = texto.match(reNotam);
-        return match ? match[0].trim() : "No disponible";
+
+        const filas = Array.from(doc.querySelectorAll("tr"));
+        const notamFila = filas.find(f => f.textContent.includes(icao));
+
+        if (notamFila) {
+          const celdas = Array.from(notamFila.querySelectorAll("td")).map(td => td.textContent.trim());
+          return celdas.join(" | ");
+        } else {
+          return "No disponible";
+        }
       } catch (e) {
         console.error("Error al obtener NOTAM:", e);
         return "Error al cargar NOTAM";
@@ -120,18 +126,17 @@
             data = ((m1 ? m1[0] : "") + "\n" + (m2 ? m2[0] : ""))
               .replace(/[\x00-\x1F\x7F]/g,"")
               .replace(/SABO.*$/i, "")
-	      .trim();
+              .trim();
           }
         }
-
-        const {icono, clase, anim} = obtenerIcono(data);
+        const {icono, clase} = obtenerIcono(data);
         const extras = obtenerIconosExtras(data);
         const hora = new Date().toLocaleTimeString();
 
         const card = document.createElement("div");
         card.className = `card ${clase}`;
         card.innerHTML = `
-          <h3><span class="icono ${anim}">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
+          <h3><span class="icono">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
           <pre>${data}</pre>
           <div class="extras">Fenómenos detectados: ${extras}</div>
           <div class="hora">Última actualización local: ${hora}</div>
