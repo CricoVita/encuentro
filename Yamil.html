@@ -113,7 +113,7 @@
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
         const filas = Array.from(doc.querySelectorAll("tr"));
-        const notamFilas = filas.filter(f => f.textContent.includes(icao));
+        const notamFilas = filas.filter(f => f.textContent.toUpperCase().includes(icao.toUpperCase()));
         if (notamFilas.length > 0) {
           let todos = notamFilas.map(fila => {
             const celdas = Array.from(fila.querySelectorAll("td")).map(td => td.textContent.trim());
@@ -121,7 +121,7 @@
           });
           return todos.join("\n\n"); // muestra todos separados
         } else {
-          return "No disponible";
+          return "No hay NOTAM publicados para este aeropuerto";
         }
       } catch (e) {
         console.error("Error al obtener NOTAM:", e);
