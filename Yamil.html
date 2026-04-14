@@ -4,32 +4,44 @@
   <meta charset="UTF-8">
   <title>Panel MET Bolivia – NAABOL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="favicon.png">
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 10px; margin: 0; transition: background 0.5s, color 0.5s; }
-    h2 { text-align: center; color: #333; font-size: 1.4em; margin: 15px 0; }
-    .panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 10px; }
-    .card { border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 12px; color: #fff; transition: background 1s ease; }
+    body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 10px; transition: background 0.5s, color 0.5s; }
+    h2 { text-align: center; color: #333; margin: 15px 0; }
+    .panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+    .card { border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 12px; color: #fff; }
     .card h3 { margin: 0 0 8px; font-size: 1.1em; display: flex; align-items: center; }
-    pre { background: rgba(255,255,255,0.2); padding: 8px; border-radius: 5px; white-space: pre-wrap; color: #fff; font-size: 0.9em; overflow-x: auto; }
+    pre { background: rgba(255,255,255,0.2); padding: 8px; border-radius: 5px; white-space: pre-wrap; color: #fff; font-size: 0.9em; }
     .hora, .contador, .extras, .notam { font-size: 0.8em; margin-top: 6px; }
     .extras { color: #ffebcd; }
     .notam { color: #ffffcc; background: rgba(0,0,0,0.2); padding: 6px; border-radius: 5px; }
-    .icono { font-size: 1.5em; margin-right: 6px; display: inline-block; }
+    .icono { font-size: 1.5em; margin-right: 6px; }
     .tormenta { background: linear-gradient(135deg, #8b0000, #b22222); }
     .lluvia { background: linear-gradient(135deg, #1e3c72, #2a5298); }
     .niebla { background: linear-gradient(135deg, #555, #888); }
     .normal { background: linear-gradient(135deg, #2e8b57, #3cb371); }
-    footer { text-align: center; margin-top: 20px; font-size: 0.8em; color: #555; padding: 10px; }
+    footer { text-align: center; margin-top: 20px; font-size: 0.8em; color: #555; }
     .boton-copiar { display:block; margin:10px auto; padding:8px 15px; background:#2e8b57; color:#fff; border:none; border-radius:5px; cursor:pointer; }
     .boton-copiar:hover { background:#3cb371; }
-    #toggleMode { font-size: 1.6em; cursor: pointer; margin: 10px; display: inline-block; transition: transform 0.3s ease; }
-    #toggleMode:hover { transform: scale(1.2); }
+    #toggleMode { font-size: 1.6em; cursor: pointer; margin: 10px; }
     body.dark-mode { background: #1e1e1e; color: #ddd; }
     body.dark-mode h2 { color: #eee; }
-    body.dark-mode .card { color: #fff; box-shadow: 0 2px 8px rgba(255,255,255,0.1); }
+    body.dark-mode .card { color: #fff; }
     body.dark-mode pre { background: rgba(255,255,255,0.1); }
     body.dark-mode footer { color: #aaa; }
+
+    /* Animaciones */
+    .blink { animation: blink 1s infinite; }
+    .bounce { animation: bounce 1s infinite; }
+    .spin { animation: spin 2s linear infinite; }
+    .fade { animation: fade 2s infinite; }
+    .float { animation: float 3s ease-in-out infinite; }
+    .fall { animation: fall 2s infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes fade { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes fall { 0% { transform: translateY(-10px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
   </style>
 </head>
 <body>
@@ -37,7 +49,7 @@
   <span id="toggleMode">☀️</span>
   <button class="boton-copiar">📋 Copiar METAR</button>
   <div class="panel" id="panel"></div>
-  <footer>© <span id="year"></span> Yamil Quiroz — Panel con datos oficiales de NAABOL</footer>
+  <footer>© <span id="year"></span> Panel con datos oficiales de NAABOL</footer>
 
   <script>
     const aeropuertos = {
@@ -53,14 +65,14 @@
     let proximaActualizacion = 0;
 
     function obtenerIcono(metar) {
-      if (!metar || metar === "No disponible") return { icono: "⚠️", clase: "niebla" };
-      if (metar.includes("TS")) return {icono: "🌩️", clase: "tormenta"};
-      if (metar.includes("RA")) return {icono: "🌧️", clase: "lluvia"};
-      if (metar.includes("FG")) return {icono: "🌫️", clase: "niebla"};
-      if (metar.includes("SN")) return {icono: "❄️", clase: "niebla"};
-      if (metar.includes("WS")) return {icono: "🌪️", clase: "tormenta"};
-      if (metar.includes("CAVOK")) return {icono: "☀️", clase: "normal"};
-      return {icono: "☁️", clase: "normal"};
+      if (!metar || metar === "No disponible") return { icono: "⚠️", clase: "niebla", anim: "blink" };
+      if (metar.includes("TS")) return {icono: "🌩️", clase: "tormenta", anim: "bounce"};
+      if (metar.includes("RA")) return {icono: "🌧️", clase: "lluvia", anim: "fall"};
+      if (metar.includes("FG")) return {icono: "🌫️", clase: "niebla", anim: "fade"};
+      if (metar.includes("SN")) return {icono: "❄️", clase: "niebla", anim: "fall"};
+      if (metar.includes("WS")) return {icono: "🌪️", clase: "tormenta", anim: "spin"};
+      if (metar.includes("CAVOK")) return {icono: "☀️", clase: "normal", anim: "spin"};
+      return {icono: "☁️", clase: "normal", anim: "float"};
     }
 
     function obtenerIconosExtras(metar) {
@@ -83,10 +95,8 @@
         const html = await resp.text();
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
-
         const filas = Array.from(doc.querySelectorAll("tr"));
         const notamFila = filas.find(f => f.textContent.includes(icao));
-
         if (notamFila) {
           const celdas = Array.from(notamFila.querySelectorAll("td")).map(td => td.textContent.trim());
           return celdas.join(" | ");
@@ -117,7 +127,7 @@
 
       for (let icao in aeropuertos) {
         let data = "No disponible";
-        if (texto) {
+                if (texto) {
           const reMetar = new RegExp(`METAR\\s+${icao}[\\s\\S]*?(?=METAR|SPECI|$)`, "i");
           const reSpe   = new RegExp(`SPECI\\s+${icao}[\\s\\S]*?(?=METAR|SPECI|$)`, "i");
           const m1 = texto.match(reMetar);
@@ -129,14 +139,15 @@
               .trim();
           }
         }
-        const {icono, clase} = obtenerIcono(data);
+
+        const {icono, clase, anim} = obtenerIcono(data);
         const extras = obtenerIconosExtras(data);
         const hora = new Date().toLocaleTimeString();
 
         const card = document.createElement("div");
         card.className = `card ${clase}`;
         card.innerHTML = `
-          <h3><span class="icono">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
+          <h3><span class="icono ${anim}">${icono}</span>${aeropuertos[icao]} (${icao})</h3>
           <pre>${data}</pre>
           <div class="extras">Fenómenos detectados: ${extras}</div>
           <div class="hora">Última actualización local: ${hora}</div>
