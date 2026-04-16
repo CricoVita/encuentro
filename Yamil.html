@@ -12,9 +12,8 @@
     .card { border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 12px; color: #fff; }
     .card h3 { margin: 0 0 8px; font-size: 1.1em; display: flex; align-items: center; }
     pre { background: rgba(255,255,255,0.2); padding: 8px; border-radius: 5px; white-space: pre-wrap; color: #fff; font-size: 0.9em; }
-    .hora, .contador, .extras, .notam { font-size: 0.8em; margin-top: 6px; }
+    .hora, .contador, .extras { font-size: 0.8em; margin-top: 6px; }
     .extras { color: #ffebcd; }
-    .notam { color: #ffffcc; background: rgba(0,0,0,0.2); padding: 6px; border-radius: 5px; white-space: pre-wrap; }
     .icono { font-size: 1.5em; margin-right: 6px; }
     .tormenta { background: linear-gradient(135deg, #8b0000, #b22222); }
     .lluvia { background: linear-gradient(135deg, #1e3c72, #2a5298); }
@@ -41,6 +40,11 @@
     @keyframes fade { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
     @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
     @keyframes fall { 0% { transform: translateY(-10px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+
+    /* Estilos para NOTAM */
+    .notam-card { margin-top:10px; }
+    .notam { background:#222; color:#ffebcd; padding:8px; border-radius:6px; margin-bottom:6px; font-size:0.85em; }
+    .notam strong { color:#ffd700; display:block; margin-bottom:4px; }
   </style>
 </head>
 <body>
@@ -48,7 +52,7 @@
   <span id="toggleMode">☀️</span>
   <button class="boton-copiar">📋 Copiar METAR</button>
   <div class="panel" id="panel"></div>
-  <footer>© <span id="year"></span> Panel con datos oficiales de NAABOL</footer>
+  <footer>© <span id="year"></span> Yamil Quiroz — Panel con datos oficiales de NAABOL</footer>
 
   <script>
     const aeropuertos = {
@@ -88,20 +92,22 @@
 
     function decodificarNOTAM(texto) {
       if (!texto || texto === "No disponible") return texto;
-      return texto
-        .replace(/\bRWY\b/g, "Pista")
-        .replace(/\bTWY\b/g, "Calle de rodaje")
-        .replace(/\bAPRON\b/g, "Plataforma")
-        .replace(/\bCLSD\b/g, "Cerrada")
-        .replace(/\bOPN\b/g, "Abierta")
-        .replace(/\bWIP\b/g, "Trabajos en progreso")
-        .replace(/\bAVBL\b/g, "Disponible")
-        .replace(/\bUNAVBL\b/g, "No disponible")
-        .replace(/\bLGT\b/g, "Luces")
-        .replace(/\bNAV\b/g, "Navegación")
-        .replace(/\bILS\b/g, "Sistema de aterrizaje instrumental")
-        .replace(/\bVOR\b/g, "Radiofaro omnidireccional")
-        .replace(/\bNDB\b/g, "Radiofaro no direccional");
+      const diccionario = {
+        "RWY": "Pista",
+        "TWY": "Calle de rodaje",
+        "APRON": "Plataforma",
+        "CLSD": "❌ Cerrada",
+        "OPN": "✅ Abierta",
+        "WIP": "🚧 Trabajos en progreso",
+        "AVBL": "Disponible",
+        "UNAVBL": "No disponible",
+        "LGT": "Luces",
+        "NAV": "Navegación",
+        "ILS": "Sistema de aterrizaje instrumental",
+        "VOR": "Radiofaro omnidireccional",
+        "NDB": "Radiofaro no direccional"
+      };
+      return texto.split(/\s+/).map(p => diccionario[p] || p).join(" ");
     }
 
     async function cargarNOTAM(icao) {
@@ -114,18 +120,21 @@
         const doc = parser.parseFromString(html, "text/html");
         const filas = Array.from(doc.querySelectorAll("tr"));
         const notamFilas = filas.filter(f => f.textContent.toUpperCase().includes(icao.toUpperCase()));
-        if (notamFilas.length > 0) {
-          let todos = notamFilas.map(fila => {
+
+                if (notamFilas.length > 0) {
+          return notamFilas.map(fila => {
             const celdas = Array.from(fila.querySelectorAll("td")).map(td => td.textContent.trim());
-            return decodificarNOTAM(celdas.join(" | "));
+            return {
+              codigo: celdas[0],
+              descripcion: decodificarNOTAM(celdas.join(" | "))
+            };
           });
-          return todos.join("\n\n"); // muestra todos separados
         } else {
-          return "No hay NOTAM publicados para este aeropuerto";
+          return [{codigo:"-", descripcion:"No hay NOTAM publicados para este aeropuerto"}];
         }
       } catch (e) {
         console.error("Error al obtener NOTAM:", e);
-        return "Error al cargar NOTAM";
+        return [{codigo:"-", descripcion:"Error al cargar NOTAM"}];
       }
     }
 
@@ -172,12 +181,23 @@
           <div class="extras">Fenómenos detectados: ${extras}</div>
           <div class="hora">Última actualización local: ${hora}</div>
           <div class="contador" id="contador-${icao}"></div>
-          <div class="notam" id="notam-${icao}">📑 Cargando NOTAM...</div>
+          <div class="notam-card" id="notam-${icao}">📑 Cargando NOTAM...</div>
         `;
         panel.appendChild(card);
 
         cargarNOTAM(icao).then(notamData => {
-          document.getElementById(`notam-${icao}`).textContent = "📑 " + notamData;
+          const notamDiv = document.getElementById(`notam-${icao}`);
+          notamDiv.innerHTML = "";
+          if (Array.isArray(notamData)) {
+            notamData.forEach(n => {
+              const item = document.createElement("div");
+              item.className = "notam";
+              item.innerHTML = `<strong>${n.codigo}</strong><br>${n.descripcion}`;
+              notamDiv.appendChild(item);
+            });
+          } else {
+            notamDiv.textContent = "📑 " + notamData;
+          }
         });
       }
     }
